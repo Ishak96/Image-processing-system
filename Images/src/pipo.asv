@@ -1,0 +1,26 @@
+close all;
+clear all;
+I=imread('cubesx3.bmp');
+I=double(I);
+figure;imagesc(I);colormap(gray)
+Ix=conv2(I,[-1 0 1],'same');
+Iy=conv2(I,[-1 0 1]','same');
+grad=Ix.^2+Iy.^2;
+figure;imagesc(grad);colormap(gray);
+A=sort(grad(:));
+A=A(round(0.9*length(A)));
+figure;imagesc(grad>A);colormap(gray);
+
+Smin == A,
+Grd=Grad
+  Nuls=find(Grd < Smin);      Grd(Nuls)=zeros(size(Nuls));
+  Grd=reshape(Grd',Nx*Ny,1);  ImCrt=zeros(Nx*Ny,1);
+  V4=[1 Nx -1 -Nx];
+  PixTest=find(Grd ~= 0);  % Test de profil /\ ou /=
+  for Pix=PixTest',
+    Sgn=sign(Grd(V4+Pix)-Grd(Pix))+1;
+    Profil=Sgn(1:2)+4*Sgn(3:4);
+    if any(Profil <= 1),  ImCrt(Pix)=Grd(Pix);  end
+  end
+  Grd=(reshape(round(ImCrt),Nx,Ny))';
+end
