@@ -355,10 +355,10 @@ int main(void) {
    
    SavePPM_rgb8matrix(L, nrl, nrh, ncl, nch, "../Images/results/rice_labelling_lookup.ppm");
 
-   int label = 17;
+   int label = 7;
 
    rgb8** EX = EXTRACTZONE(I, E, label, nrl, nrh, ncl, nch);
-   SavePPM_rgb8matrix(EX, nrl, nrh, ncl, nch, "../Images/results/rice_zone17.pgm");
+   SavePPM_rgb8matrix(EX, nrl, nrh, ncl, nch, "../Images/results/rice_zone7.pgm");
 
 
    /* Free the byte sum matrix */
