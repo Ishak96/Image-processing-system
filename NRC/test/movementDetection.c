@@ -7,70 +7,9 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "utils.h"
 
-int CEIL = 60;
-
-int fileCount(const char* dir) {
-	int file_count = 0;
-	DIR * dirp;
-	struct dirent * entry;
-
-	dirp = opendir(dir); /* There should be error handling after this */	
-	int index = 0;
-	if(dirp != NULL) {
-		while ((entry = readdir(dirp)) != NULL) {
-			if(entry->d_type == DT_REG && sscanf(entry->d_name, "lbox%03d.ppm", &index) == 1) {
-				file_count++;
-			}
-		}
-	}
-	
-	closedir(dirp);
-	return file_count;	
-}
-
-/* Convert an imatrix to a bmatrix
- * PS: casting to smaller type can be lossy
- */
-byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch)
-{
-
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         out[x][y] = (byte) m[x][y];
-      }
-   }
-
-   free_imatrix(m, nrl, nrh, ncl, nch);
-
-   return out;
-}
-
-void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
-{
-
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			int res = abs((int)I1[x][y] - (int)I2[x][y]);
-			I1[x][y] = (res > CEIL) ? (byte) 255 : (byte) 0;
-		}
-	}	
-}
-
-byte** rgb8matrix_to_bmatrix(rgb8** I, int nrl, int nrh, int ncl, int nch)
-{
-	byte** out = bmatrix(nrl, nrh, ncl, nch);
-
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			out[x][y] = ((int)I[x][y].r + (int)I[x][y].g + (int)I[x][y].b) / 3;
-		}
-	}
-
-	return out;
-}
+extern int CEIL = 60;
 
 byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
             float** mask, long maskw, long maskh)

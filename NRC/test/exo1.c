@@ -6,101 +6,9 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "utils.h"
 
-
-/* 2D convolution with a mask
- * Retuns an imatrix to avoid overflows
- */
-int** conv2(byte** f, long nrl, long nrh, long ncl, long nch,
-            float** mask, long maskw, long maskh)
-{
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         double acc = 0.0;
-         int n = 0;
-
-         for (int u = 0; u < maskw; u++) {
-            for (int v = 0; v < maskh; v++) {
-               int nx = x + u - ((int) (maskw / 2));
-               int ny = y + v - ((int) (maskh / 2));
-
-               if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-                  acc += f[nx][ny] * mask[u][v];
-                  n++;
-               }
-
-            }
-         }
-
-         out[x][y] = acc / n;
-      }
-   }
-
-   return out;
-}
-
-/* Apply a function to every element of an imatrix
- */
-void apply(int** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
-{
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         m[x][y] = func(m[x][y]);
-      }
-   }
-}
-
-/* Add two imatrices
- */
-int** add(int **m1, int **m2, long nrl, long nrh, long ncl, long nch)
-{
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         out[x][y] = m1[x][y] + m2[x][y];
-      }
-   }
-
-   return out;
-}
-
-/* Convert an imatrix to a bmatrix
- * PS: casting to smaller type can be lossy
- */
-byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch)
-{
-
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         out[x][y] = (byte) m[x][y];
-      }
-   }
-
-   free_imatrix(m, nrl, nrh, ncl, nch);
-
-   return out;
-}
-
-int pow2(int x)
-{
-   return x * x;
-}
-
-int sqrt2(int x)
-{
-   return (int) sqrt((double) x);
-}
-
-int ceil2(int x)
-{
-   return 255 * (x > 5) ;
-}
+extern int CEIL = 5;
 
 byte** bgradient(byte** I, long nrl, long nrh, long ncl, long nch)
 {
@@ -136,12 +44,12 @@ byte** bgradient(byte** I, long nrl, long nrh, long ncl, long nch)
    apply(im2, nrl, nrh, ncl, nch, pow2);
 
    /* add two matrices */
-   int** sum = add(im1, im2, nrl, nrh, ncl, nch);
+   int** sum_val = sum(im1, im2, nrl, nrh, ncl, nch);
    /* apply square root */
-   apply(sum, nrl, nrh, ncl, nch, sqrt2);
+   apply(sum_val, nrl, nrh, ncl, nch, sqrt2);
 
    /* Apply ceil */
-   apply(sum, nrl, nrh, ncl, nch, ceil2);
+   apply(sum_val, nrl, nrh, ncl, nch, ceil2);
 
    /* Free the dynamically allocated masks */
    for (int i = 0; i < 3; i++) {
@@ -157,7 +65,7 @@ byte** bgradient(byte** I, long nrl, long nrh, long ncl, long nch)
    free_imatrix(im2, nrl, nrh, ncl, nch);
 
    /* convert to byte matrix and save (and frees the sum matrix) */
-   return convert_imatrix_bmatrix(sum, nrl, nrh, ncl, nch);
+   return convert_imatrix_bmatrix(sum_val, nrl, nrh, ncl, nch);
 }
 
 rgb8** rgb8gradient(rgb8** m, long nrl, long nrh, long ncl, long nch)
@@ -187,7 +95,9 @@ rgb8** rgb8gradient(rgb8** m, long nrl, long nrh, long ncl, long nch)
 
    for (int x = nrl; x < nrh; x++) {
       for (int y = ncl; y < nch; y++) {
-         out[x][y].r = out[x][y].g = out[x][y].b = 255 * ((R_Grad[x][y] == 255) + (G_Grad[x][y] == 255) + (B_Grad[x][y] == 255) > 2);
+         out[x][y].r = out[x][y].g = out[x][y].b = 
+         255 * ((R_Grad[x][y] == 255) + (G_Grad[x][y] == 255) + 
+         (B_Grad[x][y] == 255) > 2);
       }
    }
 
@@ -202,15 +112,27 @@ int main(void) {
    long nrh, nrl,
         nch, ncl;
    rgb8 **I;
+   byte** I2;
 
    I = LoadPPM_rgb8matrix("../Images/ppm/kids.ppm", &nrl, &nrh, &ncl, &nch);
 
    rgb8** Grad = rgb8gradient(I, nrl, nrh, ncl, nch);
    SavePPM_rgb8matrix(Grad, nrl, nrh, ncl, nch, "../Images/results/kids_gredient.ppm");
 
+
    /* Free the byte sum matrix */
    free_rgb8matrix(Grad, nrl, nrh, ncl, nch);
    free_rgb8matrix(I, nrl, nrh, ncl, nch);
+
+   /*----------------------*/
+   I2 = LoadPGM_bmatrix("../Images/src/rice.pgm", &nrl, &nrh, &ncl, &nch);
+
+   byte** Grad2 = bgradient(I2, nrl, nrh, ncl, nch);
+   SavePGM_bmatrix(Grad2, nrl, nrh, ncl, nch, "../Images/results/rice_gredient.ppm");
+
+   /* Free the byte sum matrix */
+   free_bmatrix(Grad2, nrl, nrh, ncl, nch);
+   free_bmatrix(I2, nrl, nrh, ncl, nch);
 
    return 0;
 }

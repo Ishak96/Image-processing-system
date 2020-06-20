@@ -6,6 +6,7 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "utils.h"
 
 #define INFINITY  10000
 
@@ -18,7 +19,7 @@ typedef struct
    TElement* list;
 }ArrayList;
 
-int CEIL = 110; // 110 || 35
+extern int CEIL = 110; // 110 || 35
 
 /*functions for ArrayList*/
 ArrayList NEW_ArrayList()
@@ -227,16 +228,6 @@ rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, l
 }
 
 /*algorithm with look-up table*/
-int I_min(int a, int b)
-{
-   return (a > b) ? b : a;
-}
-
-int I_max(int a, int b)
-{
-   return (a > b) ? a : b;
-}
-
 int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
 {
    int att_a, att_b, e_a, e_b, att_c;
@@ -307,36 +298,6 @@ int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
    FREE_ArrayList(&lookup);
 
    return E;
-}
-/* Apply a function to every element of an imatrix*/
-void apply(byte** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
-{
-
-   for (int y = nrl; y < nrh; y++) {
-      for (int x = ncl; x < nch; x++) {
-         m[y][x] = func(m[y][x]);
-      }
-   }
-}
-
-int ceil2(int x)
-{
-   return 255 * (x > CEIL) ;
-}
-
-byte** binarization(byte** I, long nrl, long nrh, long ncl, long nch)
-{
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-   
-   for (int y = nrl; y < nrh; y++) {
-      for (int x = ncl; x < nch; x++) {
-         out[y][x] = I[y][x];
-      }
-   }  
-
-   apply(out, nrl, nrh, ncl, nch, ceil2);
-
-   return out;
 }
 
 int main(void) {

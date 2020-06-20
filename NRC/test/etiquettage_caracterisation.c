@@ -7,6 +7,7 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "utils.h"
 
 typedef struct
 {
@@ -19,7 +20,7 @@ typedef struct
 	int* H;
 } Parameters;
 
-int CEIL = 50;
+extern int CEIL = 50;
 
 Parameters init_parameters()
 {
@@ -39,80 +40,6 @@ Parameters init_parameters()
 void free_parameters(Parameters *param)
 {
 	free_ivector(param->H, 0, 255);
-}
-
-// M -> x-axis, N -> y-axis, O -> z-axis
-int*** i3D(int M, int N, int O)
-{
-	int*** A = (int***) malloc(M * sizeof(int**));
-
-	if (A == NULL) {
-		fprintf(stderr, "Out of memory");
-		exit(0);
-	}
-
-	for (int i = 0; i < M; i++) {
-		A[i] = (int**) malloc(N * sizeof(int*));
-
-		if (A[i] == NULL) {
-			fprintf(stderr, "Out of memory");
-			exit(0);
-		}
-
-		for (int j = 0; j < N; j++) {
-			A[i][j] = (int*)malloc(O * sizeof(int));
-
-	   		if (A[i][j] == NULL) {
-				fprintf(stderr, "Out of memory");
-				exit(0);
-			}
-		}
-	}
-
-	return A;
-}
-
-void free_i3D(int*** A, int M, int N)
-{
-	for (int i = 0; i < M; i++) {
-		for (int j = 0; j < N; j++)
-			free(A[i][j]);
-
-		free(A[i]);
-	}
-	free(A);
-}
-
-int fileCount(const char* dir) {
-	int file_count = 0;
-	DIR * dirp;
-	struct dirent * entry;
-
-	dirp = opendir(dir); /* There should be error handling after this */	
-	int index = 0;
-	if(dirp != NULL) {
-		while ((entry = readdir(dirp)) != NULL) {
-			if(entry->d_type == DT_REG && sscanf(entry->d_name, "lbox%03d.ppm", &index) == 1) {
-				file_count++;
-			}
-		}
-	}
-	
-	closedir(dirp);
-	return file_count;	
-}
-
-byte** rgb8matrix_to_bmatrix(rgb8** I, int nrl, int nrh, int ncl, int nch)
-{
-	byte** out = bmatrix(nrl, nrh, ncl, nch);
-
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			out[x][y] = ((int)I[x][y].r + (int)I[x][y].g + (int)I[x][y].b) / 3;
-		}
-	}
-
-	return out;
 }
 
 byte** medianFilter(const char* dir_name, const char* label, const char* extention,
@@ -166,17 +93,6 @@ byte** medianFilter(const char* dir_name, const char* label, const char* extenti
 	free_i3D(votingBox, *nrh, *nch);
 
 	return bOut;
-}
-
-void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
-{
-
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			int res = (int)I1[x][y] - (int)I2[x][y];
-			I2[x][y] = (res >= CEIL) ? (byte) 255 : (byte) 0;
-		}
-	}	
 }
 
 byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,

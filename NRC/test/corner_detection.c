@@ -6,111 +6,9 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "utils.h"
 
 #define LAMBDA 0.00005
-
-int pow2(int x)
-{
-   return x * x;
-}
-
-/* 2D convolution with a mask
- * Retuns an imatrix to avoid overflows
- */
-int** conv2(byte** f, long nrl, long nrh, long ncl, long nch,
-            float** mask, long maskw, long maskh)
-{
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         double acc = 0.0;
-         int n = 0;
-
-         for (int u = 0; u < maskw; u++) {
-            for (int v = 0; v < maskh; v++) {
-               int nx = x + u - ((int) (maskw / 2));
-               int ny = y + v - ((int) (maskh / 2));
-
-               if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-                  acc += f[nx][ny] * mask[u][v];
-                  n++;
-               }
-            }
-         }
-         out[x][y] = (acc / n);
-      }
-   }
-
-   return out;
-}
-
-int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
-               		  float** mask, long maskw, long maskh)
-{
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         double acc = 0.0;
-         float n = 0.0;
-
-         for (int u = 0; u < maskw; u++) {
-            for (int v = 0; v < maskh; v++) {
-               int nx = x + u - ((int) (maskw / 2));
-               int ny = y + v - ((int) (maskh / 2));
-
-               if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-                  acc += f[nx][ny] * mask[u][v];
-                  n += mask[u][v];
-               }
-            }
-         }
-         out[x][y] = (acc / 16);
-      }
-   }
-
-   return out;
-}
-
-/* Apply a function to every element of an imatrix
- */
-void apply(int** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
-{
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         m[x][y] = func(m[x][y]);
-      }
-   }
-}
-
-
-int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
-{
-	int** result = imatrix(nrl, nrh, ncl, nch);
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			int res = I1[x][y] + I2[x][y];
-			result[x][y] = res;
-		}
-	}
-
-	return result;
-}
-
-int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
-{
-	int** result = imatrix(nrl, nrh, ncl, nch);
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			int res = I1[x][y] * I2[x][y];
-			result[x][y] = res;
-		}
-	}
-
-	return result;
-}
 
 rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 {
@@ -166,7 +64,7 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 
 			float res = b == 0 ? 0 : a / b; 
 
-			if(res > 50) {
+			if(res > 3500) {
 				harris_i[x][y].r = 255;
 				harris_i[x][y].g = 0; 
 				harris_i[x][y].b = 0;
@@ -274,7 +172,7 @@ int main(void) {
 
 	I = LoadPGM_bmatrix("../Images/src/cubesx3.pgm", &nrl, &nrh, &ncl, &nch);
 
-	rgb8** harris_i = gradient(I, nrl, nrh, ncl, nch);
+	rgb8** harris_i = harris(I, nrl, nrh, ncl, nch);
 
 	SavePPM_rgb8matrix(harris_i, nrl, nrh, ncl, nch, "../Images/results/corner_detection/gradient_corner_detection_cubesx3.ppm");
 

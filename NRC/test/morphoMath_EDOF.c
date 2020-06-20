@@ -6,42 +6,7 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
-
-int ceil3(int x)
-{
-   return x * 255;
-}
-
-/* Apply a function to every element of an imatrix
- */
-void apply(int** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
-{
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         m[x][y] = func(m[x][y]);
-      }
-   }
-}
-
-/* Convert an imatrix to a bmatrix
- * PS: casting to smaller type can be lossy
- */
-byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch)
-{
-
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         out[x][y] = (byte) m[x][y];
-      }
-   }
-
-   free_imatrix(m, nrl, nrh, ncl, nch);
-
-   return out;
-}
+#include "utils.h"
 
 byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
             float** mask, long maskw, long maskh)
@@ -109,19 +74,6 @@ byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
    apply(out, nrl, nrh, ncl, nch, ceil3);
 
    return convert_imatrix_bmatrix(out, nrl, nrh, ncl, nch);
-}
-
-byte** minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
-{
-	int** out = imatrix(nrl, nrh, ncl, nch);
-
-	for (int x = nrl; x < nrh; x++) {
-		for (int y = ncl; y < nch; y++) {
-			out[x][y] = (int)I1[x][y] - (int)I2[x][y];
-		}
-	}	
-
-	return convert_imatrix_bmatrix(out, nrl, nrh, ncl, nch);
 }
 
 int main(void) {
