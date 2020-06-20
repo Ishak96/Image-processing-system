@@ -8,7 +8,49 @@
 #include "nrarith.h"
 #include "nralloc.h"
 
-int CEIL = 100;
+int CEIL = 50;
+
+// M -> x-axis, N -> y-axis, O -> z-axis
+int*** i3D(int M, int N, int O)
+{
+	int*** A = (int***) malloc(M * sizeof(int**));
+
+	if (A == NULL) {
+		fprintf(stderr, "Out of memory");
+		exit(0);
+	}
+
+	for (int i = 0; i < M; i++) {
+		A[i] = (int**) malloc(N * sizeof(int*));
+
+		if (A[i] == NULL) {
+			fprintf(stderr, "Out of memory");
+			exit(0);
+		}
+
+		for (int j = 0; j < N; j++) {
+			A[i][j] = (int*)malloc(O * sizeof(int));
+
+	   		if (A[i][j] == NULL) {
+				fprintf(stderr, "Out of memory");
+				exit(0);
+			}
+		}
+	}
+
+	return A;
+}
+
+void free_i3D(int*** A, int M, int N)
+{
+	for (int i = 0; i < M; i++) {
+		for (int j = 0; j < N; j++)
+			free(A[i][j]);
+
+		free(A[i]);
+	}
+	free(A);
+}
 
 int fileCount(const char* dir) {
 	int file_count = 0;
@@ -81,13 +123,66 @@ byte** temporalAverage(const char* dir_name, const char* label, const char* exte
 	return bOut;
 }
 
+byte** medianFilter(const char* dir_name, const char* label, const char* extention,
+					   long* nrl, long* nrh, long* ncl, long* nch, int n_seq)
+{
+	int n = strlen(dir_name) + strlen(label) + 3 + strlen(extention);
+	const char file_name[n];
+
+	int*** votingBox;
+
+	byte** bOut;
+
+	int som, median;
+
+	for(int i = 1; i <= n_seq ; i++) {
+		sprintf(file_name, "%s%s%03d.%s", dir_name, label, i, extention);
+		rgb8** I1 = LoadPPM_rgb8matrix(file_name, nrl, nrh, ncl, nch);
+		byte** byteI1 = rgb8matrix_to_bmatrix(I1, *nrl, *nrh, *ncl, *nch);
+
+		if(i == 1) {
+			bOut = bmatrix(*nrl, *nrh, *ncl, *nch);
+			votingBox = i3D(*nrh, *nch, 256);
+		}
+
+		for (int x = *nrl; x < *nrh; x++) {
+			for (int y = *ncl; y < *nch; y++) {
+				votingBox[x][y][(int) byteI1[x][y]]++;
+			}
+		}
+
+		free_bmatrix(byteI1, *nrl, *nrh, *ncl, *nch);
+		free_rgb8matrix(I1, *nrl, *nrh, *ncl, *nch);
+	}
+
+	median = n_seq / 2;
+
+	for (int x = *nrl; x < *nrh; x++) {
+		for (int y = *ncl; y < *nch; y++) {
+			som = 0;
+			for(int z = 0; z < 256; z++) {
+				som += votingBox[x][y][z];
+
+				if(som >= median) {
+					bOut[x][y] = (byte) z;
+					break;
+				}
+			}
+		}
+	}
+
+	free_i3D(votingBox, *nrh, *nch);
+
+	return bOut;
+}
+
 void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
 {
 
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
-			int res = abs((int)I1[x][y] - (int)I2[x][y]);
-			I1[x][y] = (res > CEIL) ? (byte) 255 : (byte) 0;
+			int res = (int)I1[x][y] - (int)I2[x][y];
+			I2[x][y] = (res >= CEIL) ? (byte) 255 : (byte) 0;
 		}
 	}	
 }
@@ -158,53 +253,54 @@ byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
 
 byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 {
-	float maskE[1][1] = {{1}};
-   	float** mask = imatrix(0, 1, 0, 1);
-
-	for (int i = 0; i < 1; i++) {
-		for (int j = 0; j < 1; j++) {
-			mask[i][j] = maskE[i][j];
-		}
-	}
-
-	int n = 5;
-
-	//remplissage
-	byte **IR = dilatation(f, nrl, nrh, ncl, nch, mask, 1, 1);
-	for(int i = 1; i < n; i++) {
-		IR = dilatation(IR, nrl, nrh, ncl, nch, mask, 1, 1);
-	}
-
-	for(int i = 0; i < n; i++) {
-		IR = erosion(IR, nrl, nrh, ncl, nch, mask, 1, 1);
-	}
-
-	free_imatrix(mask, 0, 1, 0, 1);
-
 	//debruitage
-	float maskD[2][2] = {{1, 1},
-						 {1, 1}
+	float maskD[3][3] = {{0, 1, 0},
+						 {1, 0, 1},
+						 {0, 1, 0}
 						};
-   	mask = imatrix(0, 2, 0, 2);
-
-	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < 2; j++) {
+	int** mask = imatrix(0, 3, 0, 3);
+	
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
 			mask[i][j] = maskD[i][j];
 		}
 	}
 
-	n = 12;
-	byte **ID = erosion(IR, nrl, nrh, ncl, nch, mask, 2, 2);
+	int n = 1;
+	byte **ID = erosion(f, nrl, nrh, ncl, nch, mask, 3, 3);
 	for(int i = 1; i < n; i++) {
-		ID = erosion(ID, nrl, nrh, ncl, nch, mask, 2, 2);
+		ID = erosion(ID, nrl, nrh, ncl, nch, mask, 3, 3);
 	}
 
 	for(int i = 0; i < n; i++) {
-		ID = dilatation(ID, nrl, nrh, ncl, nch, mask, 2, 2);
+		ID = dilatation(ID, nrl, nrh, ncl, nch, mask, 3, 3);
 	}
 
-	free_imatrix(mask, 0, 2, 0, 2);
-	//free_imatrix(IR, nrl, nrh, ncl, nch);
+	//remplissage
+	float maskE[3][3] = {{0, 1, 0},
+						 {1, 1, 1},
+						 {0, 1, 0}
+						};
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			mask[i][j] = maskE[i][j];
+		}
+	}
+
+	n = 1;
+	//remplissage
+	byte **IR = dilatation(ID, nrl, nrh, ncl, nch, mask, 3, 3);
+	for(int i = 1; i < n; i++) {
+		IR = dilatation(IR, nrl, nrh, ncl, nch, mask, 3, 3);
+	}
+
+	for(int i = 0; i < n; i++) {
+		IR = erosion(IR, nrl, nrh, ncl, nch, mask, 3, 3);
+	}
+
+	free_imatrix(mask, 0, 3, 0, 3);
+	free_imatrix(ID, nrl, nrh, ncl, nch);
 
 	return IR;
 }
@@ -225,15 +321,16 @@ int main(void) {
 
 	int n_seq = fileCount(dir);
 
-	byte** I = temporalAverage(dir, label, extention, &nrl, &nrh, &ncl, &nch, n_seq);
-	
+	byte** I = medianFilter(dir, label, extention, &nrl, &nrh, &ncl, &nch, n_seq);
+	SavePGM_bmatrix(I, nrl, nrh, ncl, nch, "../Images/results/morphoMath/extraxtion/lbox_medianFilter.pgm");
+
 	for(int i = 1; i <= n_seq; i++) {
 		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
 		byte** byteI1 = rgb8matrix_to_bmatrix(I1, nrl, nrh, ncl, nch);
 
 		//traitement
-		minus(byteI1, I, nrl, nrh, ncl, nch);
+		minus(I, byteI1, nrl, nrh, ncl, nch);
 		printf("%d\n", i);
 		byte** byteR = cleanImage(byteI1, nrl, nrh, ncl, nch);
 

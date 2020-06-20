@@ -131,7 +131,7 @@ int main(void) {
       					  {1, 1, 1},
       					  {1, 1, 1}
    						 };
-   	float** mask = imatrix(0, 3, 0, 3);
+   float** mask = imatrix(0, 3, 0, 3);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -139,7 +139,6 @@ int main(void) {
 		}
 	}
 	
-	byte **I;
 	int n = 6;
 
 	byte** ITrou = LoadPGM_bmatrix("../Images/Test/carreTrou.pgm", &nrl, &nrh, &ncl, &nch);

@@ -213,12 +213,12 @@ rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, l
 
    dx /= N; dy /= N;
 
-   R[dy][dx].r = 255; R[dy][dx].b = 0; R[dy][dx].b = 0;
+   R[dy][dx].r = 255; R[dy][dx].g = 0; R[dy][dx].b = 0;
 
    for (int y = min_y; y < max_y; y++) {
       for (int x = min_x; x < max_x; x++) {
          if(x >= max_x - 1 || y >= max_y - 1 || x <= min_x  || y <= min_y) {
-            R[y][x].r = 255; R[y][x].b = 0; R[y][x].b = 0;
+            R[y][x].r = 255; R[y][x].g = 0; R[y][x].b = 0;
          }
       }
    }

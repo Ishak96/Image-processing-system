@@ -1,46 +1,53 @@
-all: extraction movementDetection morphoMath_EDOF hough labelling exo1 binarization
+# name of output program
+TARGET=object_tracking
 
-exo1.o: exo1.c 
-	gcc -c exo1.c nrio.c nralloc.c nrarith.c -lm -w 
+CC=gcc
 
-exo1: exo1.o 
-	gcc -o exo1 exo1.o nrio.c nralloc.c nrarith.c -lm -w 
+# projects dirs and configuration files
+BINDIR=bin
+SRCDIR=src
+INCDIR=include
+TESTDIR=test
+OBJDIR=obj
 
-binarization.o: binarization.c 
-	gcc -c binarization.c nrio.c nralloc.c nrarith.c -lm -w 
+CFLAGS=-Wall -I$(INCDIR) -w -g 
+# getting source files and obj names
+SOURCES  := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(INCDIR)/*.h)
+OBJECTS  := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+TESTS    := $(wildcard $(TESTDIR)/*.c)
+TESTBINS := $(TESTS:$(TESTDIR)/%.c=$(BINDIR)/%)
+TESTOBJ  := $(TESTS:$(TESTDIR)/%.c=$(OBJDIR)/%.o)
 
-binarization: binarization.o 
-	gcc -o binarization binarization.o nrio.c nralloc.c nrarith.c -lm -w 	
+# flags to be used
+LFLAGS=-lm -std=c99 -lm
 
-labelling.o: labelling.c 
-	gcc -c labelling.c nrio.c nralloc.c nrarith.c -lm -w 
+# make main executable
+$(BINDIR)/$(TARGET): $(OBJECTS) | $(BINDIR)
+	$(CC) $^ $(LFLAGS) -o $@
 
-labelling: labelling.o 
-	gcc -o labelling labelling.o nrio.c nralloc.c nrarith.c -lm -w 	
+# make obj files	$(CC) $^ $(LFLAGS) -o $@	$(CC) $^ $(LFLAGS) -o $@
+$(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-hough.o: hough.c 
-	gcc -c hough.c nrio.c nralloc.c nrarith.c -lm -w 
+# compile tests
+test: $(TESTBINS)
 
-hough: hough.o 
-	gcc -o hough hough.o nrio.c nralloc.c nrarith.c -lm -w 	
+$(TESTBINS): $(TESTOBJ) $(OBJECTS) | $(BINDIR)
+	$(CC) $(filter-out $(OBJDIR)/main.o $(filter-out $(patsubst $(BINDIR)/%,$(OBJDIR)/%.o,$@), $(TESTOBJ)), $(OBJECTS) $(TESTOBJ)) -o $@ $(LFLAGS)
 
-morphoMath_EDOF.o: morphoMath_EDOF.c 
-	gcc -c morphoMath_EDOF.c nrio.c nralloc.c nrarith.c -lm -w 
+$(TESTOBJ): $(TESTS) | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $(patsubst $(OBJDIR)/%.o,$(TESTDIR)/%.c,$@) -o $@
 
-morphoMath_EDOF: morphoMath_EDOF.o 
-	gcc -o morphoMath_EDOF morphoMath_EDOF.o nrio.c nralloc.c nrarith.c -lm -w 	
+# Create the directories if they don't exist
+# https://www.gnu.org/software/make/manual/html_node/Prerequisite-Types.html
+$(OBJDIR):
+	mkdir -p $@
 
-movementDetection.o: movementDetection.c 
-	gcc -c movementDetection.c nrio.c nralloc.c nrarith.c -lm -w 
+$(BINDIR):
+	mkdir -p $@
 
-movementDetection: movementDetection.o 
-	gcc -o movementDetection movementDetection.o nrio.c nralloc.c nrarith.c -lm -w 	
 
-extraction.o: extraction.c 
-	gcc -c extraction.c nrio.c nralloc.c nrarith.c -lm -w 
-
-extraction: extraction.o 
-	gcc -o extraction extraction.o nrio.c nralloc.c nrarith.c -lm -w 	
-
-clean: 
-	rm -f -rf *.o
+.PHONY: clean
+clean:
+	rm -f obj/* bin/*
