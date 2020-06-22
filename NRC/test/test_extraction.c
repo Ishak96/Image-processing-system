@@ -7,11 +7,11 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
-#include "erosion_dilatation.h"
 #include "utils.h"
+#include "erosion_dilatation.h"
+#include "extraction.h"
 
 extern int CEIL = 50;
-
 
 byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 {
@@ -67,45 +67,46 @@ byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 }
 
 int main(void) {
-	long nrh, nrl, nch, ncl;
-
+	
+	long nrl, nrh, ncl, nch;
 	const char* dir = "../Images/Sequences/Lbox/ppm/";
-	const char* result_dir = "../Images/results/morphoMath/movementDetectiontMorphoMath/Lbox/";
+	const char* label = "lbox";
+	const char* extention = "ppm";
+	const char* result_dir = "../Images/results/morphoMath/extraxtion/movementDetectiontRefImage/Lbox/";
 
-	int n = strlen(dir) + 11;
-	int m = strlen(result_dir) + 11;
+	int n = strlen(dir) + strlen(label) + 3 + strlen(extention);
+	int m = strlen(result_dir) + strlen(label) + 3 + strlen(extention);
 
 	const char file_name[n];
 	const char file_name_result[m];
 
-
 	int n_seq = fileCount(dir);
-	for(int i = 1; i < n_seq-1 ; i++) {
-		sprintf(file_name, "%slbox%03d.ppm", dir, i);
+
+	byte** I = medianFilter(dir, label, extention, &nrl, &nrh, &ncl, &nch, n_seq);
+	SavePGM_bmatrix(I, nrl, nrh, ncl, nch, "../Images/results/morphoMath/extraxtion/lbox_medianFilter.pgm");
+
+	for(int i = 1; i <= n_seq; i++) {
+		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
 		byte** byteI1 = rgb8matrix_to_bmatrix(I1, nrl, nrh, ncl, nch);
 
-		//second image
-		sprintf(file_name, "%slbox%03d.ppm", dir, i+1);
-		rgb8** I2 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
-		byte** byteI2 = rgb8matrix_to_bmatrix(I2, nrl, nrh, ncl, nch);
-
 		//traitement
-		minus(byteI2, byteI1, nrl, nrh, ncl, nch);
+		minus(I, byteI1, nrl, nrh, ncl, nch);
 		printf("%d\n", i);
 		byte** byteR = cleanImage(byteI1, nrl, nrh, ncl, nch);
 
-		sprintf(file_name_result, "%slbox%03d.pgm", result_dir, i);
+		sprintf(file_name_result, "%s%s%03d.%s", result_dir, label, i, extention);
 		SavePGM_bmatrix(byteR, nrl, nrh, ncl, nch, file_name_result);
 		
 		//Free matrix
 		free_rgb8matrix(I1, nrl, nrh, ncl, nch);
-		free_rgb8matrix(I2, nrl, nrh, ncl, nch);
 		
 		free_bmatrix(byteI1, nrl, nrh, ncl, nch);
-		free_bmatrix(byteI2, nrl, nrh, ncl, nch);
 		free_bmatrix(byteR, nrl, nrh, ncl, nch);
 	}
+
+
+	free_bmatrix(I, nrl, nrh, ncl, nch);
 
 	return 0;
 }

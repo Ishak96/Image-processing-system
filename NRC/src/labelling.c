@@ -6,20 +6,8 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "labelling.h"
 #include "utils.h"
-
-#define INFINITY  10000
-
-typedef int TElement;
-
-typedef struct
-{
-   int size;
-   int current_size;
-   TElement* list;
-}ArrayList;
-
-extern int CEIL = 110; // 110 || 35
 
 /*functions for ArrayList*/
 ArrayList NEW_ArrayList()
@@ -109,7 +97,7 @@ void CHANGE(int** E, long nrl, long nrh, long ncl, long nch, int e_a, int e_b)
    }
 }
 
-int** INTUITIVE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
+int** INTUITIVE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
 {
    int att_a, att_b, e_a, e_b, att_c;
    /*E : the matrix of labels*/
@@ -119,7 +107,7 @@ int** INTUITIVE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
       for (int x = ncl; x < nch; x++)
          E[y][x] = 0;
 
-   int CURRENTLABEL = 0;
+   *CURRENTLABEL = 0;
 
    for (int y = nrl; y < nrh; y++) {
       for (int x = ncl; x < nch; x++) {
@@ -138,8 +126,8 @@ int** INTUITIVE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
             } else if (att_c == att_b && att_c != att_a){
                E[y][x] = e_b;
             } else if (att_c != att_b && att_c != att_a) {
-               CURRENTLABEL++;
-               E[y][x] = CURRENTLABEL;
+               (*CURRENTLABEL)++;
+               E[y][x] = *CURRENTLABEL;
             } else if (att_c == att_b && att_c == att_a && e_a == e_b){
                E[y][x] = e_b;
             } else if (att_c == att_b && att_c == att_a && e_a != e_b) {
@@ -228,7 +216,7 @@ rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, l
 }
 
 /*algorithm with look-up table*/
-int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
+int** LOOKUP_TABLE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
 {
    int att_a, att_b, e_a, e_b, att_c;
    /*E : the matrix of labels*/
@@ -240,8 +228,8 @@ int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
       for (int x = ncl; x < nch; x++)
          E[y][x] = 0;
 
-   int CURRENTLABEL = 0;
-   ADD_ArrayList(&lookup, CURRENTLABEL);
+   *CURRENTLABEL = 0;
+   ADD_ArrayList(&lookup, *CURRENTLABEL);
 
    /*First sweep*/
    for (int y = nrl; y < nrh; y++) {
@@ -261,9 +249,9 @@ int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
             } else if (att_c == att_b && att_c != att_a){
                E[y][x] = e_b;
             } else if (att_c != att_b && att_c != att_a) {
-               CURRENTLABEL++;
-               ADD_ArrayList(&lookup, CURRENTLABEL);
-               E[y][x] = CURRENTLABEL;
+               (*CURRENTLABEL)++;
+               ADD_ArrayList(&lookup, *CURRENTLABEL);
+               E[y][x] = *CURRENTLABEL;
             } else if (att_c == att_b && att_c == att_a && e_a == e_b){
                E[y][x] = e_b;
             } else if (att_c == att_b && att_c == att_a && e_a != e_b) {
@@ -278,11 +266,11 @@ int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
    }
 
    /*Updating the correspondence table*/
-   CURRENTLABEL = -1;
+   *CURRENTLABEL = -1;
    for (int i = 0; i < lookup.current_size; i++) {
       if (lookup.list[i] == i) {
-         CURRENTLABEL++;
-         lookup.list[i] = CURRENTLABEL;
+         (*CURRENTLABEL)++;
+         lookup.list[i] = *CURRENTLABEL;
       } else {
          lookup.list[i] = lookup.list[lookup.list[i]];
       }
@@ -298,37 +286,4 @@ int** LOOKUP_TABLE_LABELLING(byte** I, long nrl, long nrh, long ncl, long nch)
    FREE_ArrayList(&lookup);
 
    return E;
-}
-
-int main(void) {
-   long nrh, nrl,
-        nch, ncl;
-
-   byte **I;
-
-   I = LoadPGM_bmatrix("../Images/src/rice.pgm", &nrl, &nrh, &ncl, &nch);
-
-   byte** R = binarization(I, nrl, nrh, ncl, nch);
-
-   int** E = LOOKUP_TABLE_LABELLING(R, nrl, nrh, ncl, nch);
-
-   rgb8** L = CONVERT(E, nrl, nrh, ncl, nch);
-   
-   SavePPM_rgb8matrix(L, nrl, nrh, ncl, nch, "../Images/results/rice_labelling_lookup.ppm");
-
-   int label = 7;
-
-   rgb8** EX = EXTRACTZONE(I, E, label, nrl, nrh, ncl, nch);
-   SavePPM_rgb8matrix(EX, nrl, nrh, ncl, nch, "../Images/results/rice_zone7.pgm");
-
-
-   /* Free the byte sum matrix */
-   free_bmatrix(I, nrl, nrh, ncl, nch);
-   free_bmatrix(R, nrl, nrh, ncl, nch);
-   free_imatrix(E, nrl, nrh, ncl, nch);
-   
-   free_rgb8matrix(L, nrl, nrh, ncl, nch);
-   free_rgb8matrix(EX, nrl, nrh, ncl, nch);
-
-   return 0;
 }

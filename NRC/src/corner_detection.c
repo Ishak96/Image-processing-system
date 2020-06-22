@@ -1,18 +1,13 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <math.h>
-
 #include "def.h"
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "corner_detection.h"
 #include "utils.h"
-
-#define LAMBDA 0.00005
 
 rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 {
-	rgb8** harris_i = rgb8matrix(nrl, nrh, ncl, nch);
+	rgb8** grad_i = rgb8matrix(nrl, nrh, ncl, nch);
 
 	float maskd1[3][3] = {{-1, 0, 1},
       					 { -2, 0, 2},
@@ -57,7 +52,7 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
-			harris_i[x][y].r = I[x][y]; harris_i[x][y].g = I[x][y]; harris_i[x][y].b = I[x][y];
+			grad_i[x][y].r = I[x][y]; grad_i[x][y].g = I[x][y]; grad_i[x][y].b = I[x][y];
 			
 			float a = ix[x][y]*iyy[x][y] + iy[x][y]*ixx[x][y] - 2*ixy[x][y]*ixy_g[x][y];
 			float b = ixx[x][y] + iyy[x][y];
@@ -65,9 +60,9 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 			float res = b == 0 ? 0 : a / b; 
 
 			if(res > 3500) {
-				harris_i[x][y].r = 255;
-				harris_i[x][y].g = 0; 
-				harris_i[x][y].b = 0;
+				grad_i[x][y].r = 255;
+				grad_i[x][y].g = 0; 
+				grad_i[x][y].b = 0;
 			}
 		}
 	}
@@ -83,7 +78,7 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 	free_imatrix(mask2, 0, 3, 0, 3);
 	free_imatrix(mask3, 0, 3, 0, 3);
 
-	return harris_i;
+	return grad_i;
 }
 
 rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
@@ -141,8 +136,7 @@ rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 			harris_i[x][y].r = I[x][y]; harris_i[x][y].g = I[x][y]; harris_i[x][y].b = I[x][y];
 			
 			float res = ixy_2[x][y] - ixy[x][y] - LAMBDA * sum_ixiy_2[x][y];
-			
-			if(res > 3500) {
+			if(res > 1000) {
 				harris_i[x][y].r = 255;
 				harris_i[x][y].g = 0; 
 				harris_i[x][y].b = 0;
@@ -163,22 +157,4 @@ rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 	free_imatrix(mask3, 0, 3, 0, 3);
 
 	return harris_i;
-}
-
-int main(void) {
-	long nrh, nrl,
-         nch, ncl;
-	byte **I;
-
-	I = LoadPGM_bmatrix("../Images/src/cubesx3.pgm", &nrl, &nrh, &ncl, &nch);
-
-	rgb8** harris_i = harris(I, nrl, nrh, ncl, nch);
-
-	SavePPM_rgb8matrix(harris_i, nrl, nrh, ncl, nch, "../Images/results/corner_detection/gradient_corner_detection_cubesx3.ppm");
-
-	/* Free the byte sum matrix */
-	free_bmatrix(I, nrl, nrh, ncl, nch);
-	free_rgb8matrix(harris_i, nrl, nrh, ncl, nch);
-	
-	return 0;
 }

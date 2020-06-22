@@ -6,84 +6,17 @@
 #include "nrio.h"
 #include "nrarith.h"
 #include "nralloc.h"
+#include "erosion_dilatation.h"
 #include "utils.h"
-
-byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
-            float** mask, long maskw, long maskh)
-{
-	int same = 0;
-	for (int i = 0; i < maskw; i++) {
-		for (int j = 0; j < maskh; j++) {
-			if(mask[i][j] == 1)
-				same++;
-		}
-	}
-
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         double acc = 0.0;
-
-         for (int u = 0; u < maskw; u++) {
-            for (int v = 0; v < maskh; v++) {
-               int nx = x + u - ((int) (maskw / 2));
-               int ny = y + v - ((int) (maskh / 2));
-
-               if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-                  acc += ((int)f[nx][ny] / 255) * mask[u][v];
-               }
-
-            }
-         }
-        
-         out[x][y] = (acc == same) ? 1 : 0;
-      }
-   }
-
-   apply(out, nrl, nrh, ncl, nch, ceil3);
-
-   return convert_imatrix_bmatrix(out, nrl, nrh, ncl, nch);
-}
-
-byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
-            float** mask, long maskw, long maskh)
-{
-   int** out = imatrix(nrl, nrh, ncl, nch);
-
-   for (int x = nrl; x < nrh; x++) {
-      for (int y = ncl; y < nch; y++) {
-         double acc = 0.0;
-
-         for (int u = 0; u < maskw; u++) {
-            for (int v = 0; v < maskh; v++) {
-               int nx = x + u - ((int) (maskw / 2));
-               int ny = y + v - ((int) (maskh / 2));
-
-               if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-                  acc += ((int)f[nx][ny] / 255) * mask[u][v];
-               }
-
-            }
-         }
-        
-         out[x][y] = (acc > 0) ? 1 : 0;
-      }
-   }
-
-   apply(out, nrl, nrh, ncl, nch, ceil3);
-
-   return convert_imatrix_bmatrix(out, nrl, nrh, ncl, nch);
-}
 
 int main(void) {
 	long nrh, nrl, nch, ncl;
 
-	float maskE[3][3] = {{1, 1, 1},
+	int maskE[3][3] = {{1, 1, 1},
       					  {1, 1, 1},
       					  {1, 1, 1}
    						 };
-   float** mask = imatrix(0, 3, 0, 3);
+   int** mask = imatrix(0, 3, 0, 3);
 
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
