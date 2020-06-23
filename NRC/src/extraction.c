@@ -19,10 +19,16 @@ byte** temporalAverage(const char* dir_name, const char* label, const char* exte
 
 	const char file_name[n];
 
+	byte** byteI1 = NULL;
+
 	for(int i = 1; i <= n_seq ; i++) {
 		sprintf(file_name, "%s%s%03d.%s", dir_name, label, i, extention);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, nrl, nrh, ncl, nch);
-		byte** byteI1 = rgb8matrix_to_bmatrix(I1, *nrl, *nrh, *ncl, *nch);
+
+		if(byteI1 == NULL)
+			byteI1 = bmatrix(*nrl, *nrh, *ncl, *nch);
+
+		rgb8matrix_to_bmatrix(I1, byteI1, *nrl, *nrh, *ncl, *nch);
 
 		if(i == 1) {
 			out = dmatrix(*nrl, *nrh, *ncl, *nch);			
@@ -34,9 +40,10 @@ byte** temporalAverage(const char* dir_name, const char* label, const char* exte
 			}
 		}
 
-		free_bmatrix(byteI1, *nrl, *nrh, *ncl, *nch);
 		free_rgb8matrix(I1, *nrl, *nrh, *ncl, *nch);
 	}
+
+	free_bmatrix(byteI1, *nrl, *nrh, *ncl, *nch);
 
 	byte** bOut = bmatrix(*nrl, *nrh, *ncl, *nch);			
 
@@ -61,10 +68,16 @@ byte** medianFilter(const char* dir_name, const char* label, const char* extenti
 
 	int som, median;
 
+	byte** byteI1 = NULL;
+
 	for(int i = 1; i <= n_seq ; i++) {
 		sprintf(file_name, "%s%s%03d.%s", dir_name, label, i, extention);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, nrl, nrh, ncl, nch);
-		byte** byteI1 = rgb8matrix_to_bmatrix(I1, *nrl, *nrh, *ncl, *nch);
+		
+		if(byteI1 == NULL)
+			byteI1 = bmatrix(*nrl, *nrh, *ncl, *nch);
+		
+		rgb8matrix_to_bmatrix(I1, byteI1, *nrl, *nrh, *ncl, *nch);
 
 		if(i == 1) {
 			bOut = bmatrix(*nrl, *nrh, *ncl, *nch);
@@ -77,9 +90,10 @@ byte** medianFilter(const char* dir_name, const char* label, const char* extenti
 			}
 		}
 
-		free_bmatrix(byteI1, *nrl, *nrh, *ncl, *nch);
 		free_rgb8matrix(I1, *nrl, *nrh, *ncl, *nch);
 	}
+
+	free_bmatrix(byteI1, *nrl, *nrh, *ncl, *nch);
 
 	median = n_seq / 2;
 

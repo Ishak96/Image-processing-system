@@ -26,7 +26,9 @@ int main(int argc, char** argv) {
 
 	I = LoadPGM_bmatrix("../Images/src/cubesx3.pgm", &nrl, &nrh, &ncl, &nch);
 
-	int** harris_i = harris(I, nrl, nrh, ncl, nch);
+	int** harris_i = imatrix(nrl, nrh, ncl, nch); 
+
+	harris(harris_i, I, nrl, nrh, ncl, nch);
 
 	rgb8** red_corner = display_corner(I, harris_i, nrl, nrh, ncl, nch);
 
@@ -35,6 +37,7 @@ int main(int argc, char** argv) {
 	/* Free the byte sum matrix */
 	free_bmatrix(I, nrl, nrh, ncl, nch);
 	free_rgb8matrix(harris_i, nrl, nrh, ncl, nch);
+	destroy_mask();
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	image  = gtk_image_new_from_file("../Images/results/corner_detection/gradient_corner_detection_cubesx3.ppm");
@@ -46,7 +49,7 @@ int main(int argc, char** argv) {
 
   	gtk_widget_show_all(window);
 
-  	gtk_main();	
-	
+  	gtk_main();
+
 	return 0;
 }

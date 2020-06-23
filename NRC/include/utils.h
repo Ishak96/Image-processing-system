@@ -31,7 +31,7 @@ void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch);
 
 int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch);
 
-byte** rgb8matrix_to_bmatrix(rgb8** I, int nrl, int nrh, int ncl, int nch);
+void rgb8matrix_to_bmatrix(rgb8** I, byte** out, int nrl, int nrh, int ncl, int nch);
 
 byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch);
 

@@ -101,7 +101,6 @@ int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
 
 void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
 {
-
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
 			int res = (int)I1[x][y] - (int)I2[x][y];
@@ -122,17 +121,13 @@ int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
 	return result;
 }
 
-byte** rgb8matrix_to_bmatrix(rgb8** I, int nrl, int nrh, int ncl, int nch)
+void rgb8matrix_to_bmatrix(rgb8** I, byte** out, int nrl, int nrh, int ncl, int nch)
 {
-	byte** out = bmatrix(nrl, nrh, ncl, nch);
-
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
 			out[x][y] = ((int)I[x][y].r + (int)I[x][y].g + (int)I[x][y].b) / 3;
 		}
 	}
-
-	return out;
 }
 
 /* Convert an imatrix to a bmatrix
@@ -230,6 +225,8 @@ int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
 			out[x][y] = (acc / 16);
 		}
 	}
+
+	free_imatrix(f, nrl, nrh, ncl, nch);
 	return out;
 }
 
@@ -298,9 +295,11 @@ int fileCount(const char* dir)
 void print_progress(size_t count, size_t max)
 {
 	const char prefix[] = "Progress: [";
-	const char suffix[] = "]";
+	char suffix[9];
+	sprintf(suffix, "] -> %d%%", count);
+
 	const size_t prefix_length = sizeof(prefix) - 1;
-	const size_t suffix_length = sizeof(suffix) - 1;
+	const size_t suffix_length = 9;
 	char *buffer = calloc(max + prefix_length + suffix_length + 1, 1);
 	size_t i = 0;
 

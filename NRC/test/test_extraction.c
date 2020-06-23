@@ -28,15 +28,14 @@ byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 		}
 	}
 
-	int n = 1;
-	byte **ID = erosion(f, nrl, nrh, ncl, nch, mask, 3, 3);
-	for(int i = 1; i < n; i++) {
-		ID = erosion(ID, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	byte** out11 = bmatrix(nrl, nrh, ncl, nch);
+	byte** out12 = bmatrix(nrl, nrh, ncl, nch);
 
-	for(int i = 0; i < n; i++) {
-		ID = dilatation(ID, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	int n = 1;
+	n_erosion(f, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
+
+	n_dilatation(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
+
 
 	//remplissage
 	float maskE[3][3] = {{0, 1, 0},
@@ -51,19 +50,14 @@ byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 	}
 
 	n = 1;
-	byte **IR = dilatation(ID, nrl, nrh, ncl, nch, mask, 3, 3);
-	for(int i = 1; i < n; i++) {
-		IR = dilatation(IR, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	n_dilatation(out12, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
 
-	for(int i = 0; i < n; i++) {
-		IR = erosion(IR, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	n_erosion(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
 
 	free_imatrix(mask, 0, 3, 0, 3);
-	free_bmatrix(ID, nrl, nrh, ncl, nch);
+	free_bmatrix(out11, nrl, nrh, ncl, nch);
 
-	return IR;
+	return out12;
 }
 
 int main(void) {
@@ -85,10 +79,12 @@ int main(void) {
 	byte** I = medianFilter(dir, label, extention, &nrl, &nrh, &ncl, &nch, n_seq);
 	SavePGM_bmatrix(I, nrl, nrh, ncl, nch, "../Images/results/morphoMath/extraxtion/lbox_medianFilter.pgm");
 
+	byte** byteI1 = bmatrix(nrl, nrh, ncl, nch);
+
 	for(int i = 1; i <= n_seq; i++) {
 		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
-		byte** byteI1 = rgb8matrix_to_bmatrix(I1, nrl, nrh, ncl, nch);
+		rgb8matrix_to_bmatrix(I1, byteI1, nrl, nrh, ncl, nch);
 
 		//traitement
 		minus(I, byteI1, nrl, nrh, ncl, nch);
@@ -101,11 +97,10 @@ int main(void) {
 		//Free matrix
 		free_rgb8matrix(I1, nrl, nrh, ncl, nch);
 		
-		free_bmatrix(byteI1, nrl, nrh, ncl, nch);
 		free_bmatrix(byteR, nrl, nrh, ncl, nch);
 	}
 
-
+	free_bmatrix(byteI1, nrl, nrh, ncl, nch);
 	free_bmatrix(I, nrl, nrh, ncl, nch);
 
 	return 0;

@@ -2,10 +2,16 @@
 #define __EROSION_DILATATION_H__
 
 
-byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
+void erosion(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh);
 
-byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
+void dilatation(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh);
+
+void n_erosion(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
+            int** mask, long maskw, long maskh, int n);
+
+void n_dilatation(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
+            int** mask, long maskw, long maskh, int n);
 
 #endif

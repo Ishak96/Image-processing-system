@@ -5,36 +5,56 @@
 #include "corner_detection.h"
 #include "utils.h"
 
+float** mask1 = NULL;
+float** mask2 = NULL;
+float** mask3 = NULL;
+
+void create_mask(int harris_gradient) 
+{
+	if(mask1 == NULL) {
+		mask1 = imatrix(0, 3, 0, 3);
+		mask1[0][0] = -1; mask1[0][1] = 0; mask1[0][2] = 1;
+		mask1[1][0] = -2; mask1[1][1] = 0; mask1[1][2] = 2;
+		mask1[2][0] = -1; mask1[2][1] = 0; mask1[2][2] = 1;
+	}
+
+	if(mask2 == NULL) {
+		mask2 = imatrix(0, 3, 0, 3);
+		mask2[0][0] = -1; mask2[0][1] = -2; mask2[0][2] = -1;
+		mask2[1][0] = 0; mask2[1][1] = 0; mask2[1][2] = 0;
+		mask2[2][0] = 1; mask2[2][1] = 2; mask2[2][2] = 1;
+	}
+
+	if(mask3 == NULL) {
+		mask3 = imatrix(0, 3, 0, 3);
+		mask3[0][0] = 1;  mask3[0][2] = 1;
+		if(harris_gradient){
+			mask3[0][1] = 2;
+			mask3[1][0] = 2; mask3[1][1] = 4; mask3[1][2] = 2;
+			mask3[2][1] = 2;
+		} else {
+			mask3[0][1] = 1;
+			mask3[1][0] = 1; mask3[1][1] = 0; mask3[1][2] = 1;
+			mask3[2][1] = 1;			
+		}
+		mask3[2][0] = 1; mask3[2][2] = 1;
+	}	
+}
+
+void destroy_mask()
+{
+	if(mask1 != NULL && mask2 != NULL && mask3 != NULL) {
+		free_imatrix(mask1, 0, 3, 0, 3);
+		free_imatrix(mask2, 0, 3, 0, 3);
+		free_imatrix(mask3, 0, 3, 0, 3);
+	}
+}
+
 int** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 {
+	create_mask(0);
+
 	int** grad_i = imatrix(nrl, nrh, ncl, nch);
-
-	float maskd1[3][3] = {{-1, 0, 1},
-      					 { -2, 0, 2},
-      					 { -1, 0, 1}
-   						 };
-
-	float maskd2[3][3] = {{-1, -2, -1},
-      					 {  0,  0,  0},
-      					 {  1,  2,  1}
-   						 };
-
-	float maskg[3][3] = {{1, 1, 1},
-      					 {1, 0, 1},
-      					 {1, 1, 1}
-   						};
-
-	float** mask1 = imatrix(0, 3, 0, 3);
-	float** mask2 = imatrix(0, 3, 0, 3);
-	float** mask3 = imatrix(0, 3, 0, 3);
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask1[i][j] = maskd1[i][j];
-			mask2[i][j] = maskd2[i][j];
-			mask3[i][j] = maskg[i][j];
-		}
-	}
 
 	/* Calculate convolutions for the two masks */
 	int** ix = conv2(I, nrl, nrh, ncl, nch, mask1, 3, 3); // horizontal
@@ -70,44 +90,13 @@ int** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 	free_imatrix(ixy, nrl, nrh, ncl, nch);
 	free_imatrix(ixy_g, nrl, nrh, ncl, nch);
 
-	free_imatrix(mask1, 0, 3, 0, 3);
-	free_imatrix(mask2, 0, 3, 0, 3);
-	free_imatrix(mask3, 0, 3, 0, 3);
-
 	return grad_i;
 }
 
-int** harris(byte** I, long nrl, long nrh, long ncl, long nch)
+void harris(int** harris_i, byte** I, long nrl, long nrh, long ncl, long nch)
 {
-	int** harris_i = imatrix(nrl, nrh, ncl, nch);
-
-	float maskd1[3][3] = {{-1, 0, 1},
-      					 { -2, 0, 2},
-      					 { -1, 0, 1}
-   						 };
-
-	float maskd2[3][3] = {{-1, -2, -1},
-      					 {  0,  0,  0},
-      					 {  1,  2,  1}
-   						 };
-
-	float maskg[3][3] = {{1, 2, 1},
-      					 {2, 4, 2},
-      					 {1, 2, 1}
-   						};
-
-	float** mask1 = imatrix(0, 3, 0, 3);
-	float** mask2 = imatrix(0, 3, 0, 3);
-	float** mask3 = imatrix(0, 3, 0, 3);
-
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask1[i][j] = maskd1[i][j];
-			mask2[i][j] = maskd2[i][j];
-			mask3[i][j] = maskg[i][j];
-		}
-	}
-
+	create_mask(1);
+	
 	/* Calculate convolutions for the two masks */
 	int** ix = conv2(I, nrl, nrh, ncl, nch, mask1, 3, 3); // horizontal
 	int** iy = conv2(I, nrl, nrh, ncl, nch, mask2, 3, 3); // vertical
@@ -122,18 +111,13 @@ int** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 	int** ixx = gaussian_filter(ix, nrl, nrh, ncl, nch, mask3, 3, 3);
 	int** iyy = gaussian_filter(iy, nrl, nrh, ncl, nch, mask3, 3, 3);
 
-	int** ixy_2 = multiply(ixx, iyy, nrl, nrh, ncl, nch);
-
-	int** sum_ixiy_2 = sum(ixx, iyy, nrl, nrh, ncl, nch);
-	apply(sum_ixiy_2, nrl, nrh, ncl, nch, pow2);
-
 	int local_x = 0;
 	int local_y = 0;
 	float local_max = -10000;
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
 			
-			float res = ixy_2[x][y] - ixy[x][y] - LAMBDA * sum_ixiy_2[x][y];
+			float res = (ixx[x][y] * iyy[x][y]) - ixy[x][y] - LAMBDA * (ixx[x][y] + iyy[x][y]) * (ixx[x][y] + iyy[x][y]);
 			harris_i[x][y] = 0;
 			
 			if(res < 0) {
@@ -151,19 +135,9 @@ int** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 		}
 	}
 
-	free_imatrix(ix, nrl, nrh, ncl, nch);
-	free_imatrix(iy, nrl, nrh, ncl, nch);
 	free_imatrix(ixx, nrl, nrh, ncl, nch);
 	free_imatrix(iyy, nrl, nrh, ncl, nch);
 	free_imatrix(ixy, nrl, nrh, ncl, nch);
-	free_imatrix(ixy_2, nrl, nrh, ncl, nch);
-	free_imatrix(sum_ixiy_2, nrl, nrh, ncl, nch);
-
-	free_imatrix(mask1, 0, 3, 0, 3);
-	free_imatrix(mask2, 0, 3, 0, 3);
-	free_imatrix(mask3, 0, 3, 0, 3);
-
-	return harris_i;
 }
 
 rgb8** display_corner(byte** I, int** C, long nrl, long nrh, long ncl, long nch)

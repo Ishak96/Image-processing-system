@@ -12,10 +12,10 @@
 int main(void) {
 	long nrh, nrl, nch, ncl;
 
-	int maskE[3][3] = {{1, 1, 1},
-      					  {1, 1, 1},
-      					  {1, 1, 1}
-   						 };
+	int maskE[3][3] = { {1, 1, 1},
+      					{1, 1, 1},
+      					{1, 1, 1}
+   					  };
    int** mask = imatrix(0, 3, 0, 3);
 
 	for (int i = 0; i < 3; i++) {
@@ -29,35 +29,33 @@ int main(void) {
 	byte** ITrou = LoadPGM_bmatrix("../Images/Test/carreTrou.pgm", &nrl, &nrh, &ncl, &nch);
 	byte** IBruit = LoadPGM_bmatrix("../Images/Test/carreBruit.pgm", &nrl, &nrh, &ncl, &nch);
 
-	//remplissage
-	byte **IR = dilatation(ITrou, nrl, nrh, ncl, nch, mask, 3, 3);
-	for(int i = 1; i < n; i++) {
-		IR = dilatation(IR, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	byte** out11 = bmatrix(nrl, nrh, ncl, nch);
+	byte** out12 = bmatrix(nrl, nrh, ncl, nch);
 
-	for(int i = 0; i < n; i++) {
-		IR = erosion(IR, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	byte** out21 = bmatrix(nrl, nrh, ncl, nch);
+	byte** out22 = bmatrix(nrl, nrh, ncl, nch);
+
+	//remplissage
+	n_dilatation(ITrou, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
+
+	n_erosion(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
 
 	//debruitage
 	n = 8;
-	byte **ID = erosion(IBruit, nrl, nrh, ncl, nch, mask, 3, 3);
-	for(int i = 1; i < n; i++) {
-		ID = erosion(ID, nrl, nrh, ncl, nch, mask, 3, 3);
-	}
+	n_erosion(IBruit, out21, nrl, nrh, ncl, nch, mask, 3, 3, n);
 
-	for(int i = 0; i < n; i++) {
-		ID = dilatation(ID, nrl, nrh, ncl, nch, mask, 3, 3);
-	}	
+	n_dilatation(out21, out22, nrl, nrh, ncl, nch, mask, 3, 3, n);
 
-	SavePGM_bmatrix(IR, nrl, nrh, ncl, nch, "../Images/results/carre_Trou_remplis.pgm");
-	SavePGM_bmatrix(ID, nrl, nrh, ncl, nch, "../Images/results/carre_Bruit_enleve.pgm");
+	SavePGM_bmatrix(out12, nrl, nrh, ncl, nch, "../Images/results/carre_Trou_remplis.pgm");
+	SavePGM_bmatrix(out22, nrl, nrh, ncl, nch, "../Images/results/carre_Bruit_enleve.pgm");
 	
 	/* Free the byte sum matrix */
 	free_bmatrix(ITrou, nrl, nrh, ncl, nch);
 	free_bmatrix(IBruit, nrl, nrh, ncl, nch);
-	free_bmatrix(IR, nrl, nrh, ncl, nch);
-	free_bmatrix(ID, nrl, nrh, ncl, nch);
+	free_bmatrix(out11, nrl, nrh, ncl, nch);
+	free_bmatrix(out12, nrl, nrh, ncl, nch);
+	free_bmatrix(out21, nrl, nrh, ncl, nch);
+	free_bmatrix(out22, nrl, nrh, ncl, nch);
 	free_imatrix(mask, 0, 3, 0, 3);
 
 	return 0;

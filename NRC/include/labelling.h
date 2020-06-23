@@ -38,6 +38,6 @@ rgb8** CONVERT(int** E, long nrl, long nrh, long ncl, long nch);
 rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch);
 
 /*algorithm with look-up table*/
-int** LOOKUP_TABLE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch);
+void LOOKUP_TABLE_LABELLING(byte** I, int** E, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch);
 
 #endif

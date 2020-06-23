@@ -16,14 +16,15 @@ int main(void) {
         nch, ncl;
 
    byte **I;
-   int** E;
    int nb_label;
 
    I = LoadPGM_bmatrix("../Images/src/rice.pgm", &nrl, &nrh, &ncl, &nch);
 
+   int** E = imatrix(nrl, nrh, ncl, nch);
+
    byte** R = binarization(I, nrl, nrh, ncl, nch);
 
-   E = LOOKUP_TABLE_LABELLING(R, &nb_label, nrl, nrh, ncl, nch);
+   LOOKUP_TABLE_LABELLING(R, E, &nb_label, nrl, nrh, ncl, nch);
 
    rgb8** L = CONVERT(E, nrl, nrh, ncl, nch);
    

@@ -216,11 +216,9 @@ rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, l
 }
 
 /*algorithm with look-up table*/
-int** LOOKUP_TABLE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
+void LOOKUP_TABLE_LABELLING(byte** I, int** E, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
 {
    int att_a, att_b, e_a, e_b, att_c;
-   /*E : the matrix of labels*/
-   int** E = imatrix(nrl, nrh, ncl, nch);
 
    ArrayList lookup = NEW_ArrayList();
 
@@ -284,6 +282,4 @@ int** LOOKUP_TABLE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, lo
    }
 
    FREE_ArrayList(&lookup);
-
-   return E;
 }

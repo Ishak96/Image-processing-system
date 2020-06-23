@@ -10,7 +10,7 @@
 #include "utils.h"
 #include "extraction.h"
 
-byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
+void erosion(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh)
 {
 	int same = 0;
@@ -21,8 +21,6 @@ byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
 		}
 	}
 
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-
    for (int x = nrl; x < nrh; x++) {
       for (int y = ncl; y < nch; y++) {
          int acc = 0;
@@ -38,19 +36,14 @@ byte** erosion(byte** f, long nrl, long nrh, long ncl, long nch,
 
             }
          }
-        
          out[x][y] = (acc == same) ? (byte) 255 : (byte) 0;
       }
    }
-
-   return out;
 }
 
-byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
+void dilatation(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh)
 {
-   byte** out = bmatrix(nrl, nrh, ncl, nch);
-
    for (int x = nrl; x < nrh; x++) {
       for (int y = ncl; y < nch; y++) {
          int acc = 0;
@@ -66,10 +59,29 @@ byte** dilatation(byte** f, long nrl, long nrh, long ncl, long nch,
 
             }
          }
-        
          out[x][y] = (acc > 0) ? (byte) 255 : (byte) 0;
       }
    }
+}
 
-   return out;
+void n_erosion(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
+            int** mask, long maskw, long maskh, int n)
+{
+   erosion(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
+ 
+   for(int i = 1; i < n; i++) {
+      copy_bmatrix(dist, nrl, nrh, ncl, nch, src, nrl, nrh, ncl, nch);
+      erosion(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
+   }
+}
+
+void n_dilatation(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
+            int** mask, long maskw, long maskh, int n)
+{
+   dilatation(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
+ 
+   for(int i = 1; i < n; i++) {
+      copy_bmatrix(dist, nrl, nrh, ncl, nch, src, nrl, nrh, ncl, nch);
+      dilatation(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
+   }
 }

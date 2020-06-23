@@ -2,6 +2,7 @@
 #include<stdlib.h>
 #include <math.h>
 #include <dirent.h>
+#include <gtk/gtk.h>
 
 #include "def.h"
 #include "nrio.h"
@@ -13,53 +14,50 @@
 #include "labelling.h"
 #include "etiquettage_caracterisation.h"
 
-extern int CEIL = 50;
+extern int CEIL = 45;
 
-byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
-{
-	//debruitage
-	float maskD[3][3] = {{0, 1, 0},
-						 {1, 0, 1},
-						 {0, 1, 0}
-						};
-	int** mask = imatrix(0, 3, 0, 3);
-	
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask[i][j] = maskD[i][j];
-		}
-	}
+int** mask = NULL;
 
-	byte** out11 = bmatrix(nrl, nrh, ncl, nch);
-	byte** out12 = bmatrix(nrl, nrh, ncl, nch);
+void fill_maskR() {
+	mask[0][0] = 1; mask[0][1] = 1;
+	mask[1][0] = 1; mask[1][1] = 1;
+}
 
+void fill_maskD() {
+	mask[0][0] = 1; mask[0][1] = 1;
+	mask[1][0] = 1; mask[1][1] = 1;
+}
+
+void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
+{	
 	int n = 1;
-	n_erosion(f, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-	n_dilatation(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-
+	
+	byte** out = bmatrix(nrl, nrh, ncl, nch);
+	
 	//remplissage
-	float maskE[3][3] = {{0, 1, 0},
-						 {1, 1, 1},
-						 {0, 1, 0}
-						};
+	fill_maskR();
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask[i][j] = maskE[i][j];
+	n_dilatation(f, out, nrl, nrh, ncl, nch, mask, 2, 2, n);
+
+	n_erosion(out, f, nrl, nrh, ncl, nch, mask, 2, 2, n);	
+	
+	//debruitage
+	n_erosion(f, out, nrl, nrh, ncl, nch, mask, 2, 2, n);
+
+	n_dilatation(out, f, nrl, nrh, ncl, nch, mask, 2, 2, n);
+
+	free_bmatrix(out, nrl, nrh, ncl, nch);
+}
+
+void rgb8_minus(rgb8** I, byte** Iref, byte** I2,long nrl, long nrh, long ncl, long nch)
+{
+	for (int x = nrl; x < nrh; x++) {
+		for (int y = ncl; y < nch; y++) {
+			int value = ((int)I[x][y].r + (int)I[x][y].g + (int)I[x][y].b) / 3;
+			int res = (int)Iref[x][y] - value;
+			I2[x][y] = (res >= CEIL) ? (byte) 255 : (byte) 0;
 		}
-	}
-
-	n = 1;
-	n_dilatation(out12, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-	n_erosion(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-	free_imatrix(mask, 0, 3, 0, 3);
-	free_bmatrix(out11, nrl, nrh, ncl, nch);
-
-	return out12;
+	}	
 }
 
 int main(void) {
@@ -86,34 +84,32 @@ int main(void) {
 	SavePGM_bmatrix(I, nrl, nrh, ncl, nch, "../Images/results/morphoMath/extraxtion/lbox_medianFilter.pgm");
 
 	byte** byteI1 = bmatrix(nrl, nrh, ncl, nch);
+	mask = imatrix(0, 3, 0, 3);
+	int** harris_i = imatrix(nrl, nrh, ncl, nch);
 	int** E = imatrix(nrl, nrh, ncl, nch);
 	rgb8** I1;
 
 	for(int i = 1; i <= n_seq; i++) {
-		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
-		I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
-		rgb8matrix_to_bmatrix(I1, byteI1, nrl, nrh, ncl, nch);
 
+		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
+		
+		I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
+		
 		int nb_label;
 
 		//traitement
-		minus(I, byteI1, nrl, nrh, ncl, nch);
+		rgb8_minus(I1, I, byteI1, nrl, nrh, ncl, nch);
 		
-		byte** byteR = cleanImage(byteI1, nrl, nrh, ncl, nch);
+		cleanImage(byteI1, nrl, nrh, ncl, nch);
 
-		LOOKUP_TABLE_LABELLING(byteR, E, &nb_label, nrl, nrh, ncl, nch);
+		harris(harris_i, byteI1, nrl, nrh, ncl, nch);
 
-		Parameters* param = compute_parameters(I1, E, nb_label,
-							  				   nrl, nrh, ncl, nch);
-		
-		store_parameters(i, nb_label, param);
+		LOOKUP_TABLE_LABELLING(byteI1, E, &nb_label, nrl, nrh, ncl, nch);
 		
 		sprintf(file_name_result, "%s%s%03d.%s", result_dir, label, i, extention);
-		SavePGM_bmatrix(byteR, nrl, nrh, ncl, nch, file_name_result);
-		
-		//Free matrix
-		free_bmatrix(byteR, nrl, nrh, ncl, nch);
-		free(param);
+		SavePGM_bmatrix(byteI1, nrl, nrh, ncl, nch, file_name_result);
+
+		free_rgb8matrix(I1, nrl, nrh, ncl, nch);
 
 		percent = (100 * (i + 1)) / n_seq;
 		if(percent >= displayNext) {
@@ -122,10 +118,13 @@ int main(void) {
 		}
 	}
 
+	//Free matrix
 	free_bmatrix(byteI1, nrl, nrh, ncl, nch);
-	free_bmatrix(I, nrl, nrh, ncl, nch);
+	free_imatrix(harris_i, nrl, nrh, ncl, nch);
 	free_imatrix(E, nrl, nrh, ncl, nch);
-	free_rgb8matrix(I1, nrl, nrh, ncl, nch);
+	destroy_mask();
+	free_imatrix(mask, 0, 2, 0, 2);
+	free_bmatrix(I, nrl, nrh, ncl, nch);
 
 	return 0;
 }
