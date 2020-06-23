@@ -1,8 +1,3 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <math.h>
-#include <dirent.h>
-
 #include "def.h"
 #include "nrio.h"
 #include "nrarith.h"
@@ -298,4 +293,26 @@ int fileCount(const char* dir)
 	
 	closedir(dirp);
 	return file_count;	
+}
+
+void print_progress(size_t count, size_t max)
+{
+	const char prefix[] = "Progress: [";
+	const char suffix[] = "]";
+	const size_t prefix_length = sizeof(prefix) - 1;
+	const size_t suffix_length = sizeof(suffix) - 1;
+	char *buffer = calloc(max + prefix_length + suffix_length + 1, 1);
+	size_t i = 0;
+
+	strcpy(buffer, prefix);
+	for (; i < max; ++i)
+	{
+		buffer[prefix_length + i] = i < count ? '#' : ' ';
+	}
+
+	strcpy(&buffer[prefix_length + i], suffix);
+	printf("\e[1;1H\e[2J");
+	printf("\b%c[2K\r%s\n", 27, buffer);
+	fflush(stdout);
+	free(buffer);
 }

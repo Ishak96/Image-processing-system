@@ -5,9 +5,9 @@
 #include "corner_detection.h"
 #include "utils.h"
 
-rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
+int** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 {
-	rgb8** grad_i = rgb8matrix(nrl, nrh, ncl, nch);
+	int** grad_i = imatrix(nrl, nrh, ncl, nch);
 
 	float maskd1[3][3] = {{-1, 0, 1},
       					 { -2, 0, 2},
@@ -52,18 +52,14 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
-			grad_i[x][y].r = I[x][y]; grad_i[x][y].g = I[x][y]; grad_i[x][y].b = I[x][y];
-			
+
 			float a = ix[x][y]*iyy[x][y] + iy[x][y]*ixx[x][y] - 2*ixy[x][y]*ixy_g[x][y];
 			float b = ixx[x][y] + iyy[x][y];
 
 			float res = b == 0 ? 0 : a / b; 
 
-			if(res > 3500) {
-				grad_i[x][y].r = 255;
-				grad_i[x][y].g = 0; 
-				grad_i[x][y].b = 0;
-			}
+			if(res > 3500) 
+				grad_i[x][y] = 1;
 		}
 	}
 
@@ -81,9 +77,9 @@ rgb8** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 	return grad_i;
 }
 
-rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
+int** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 {
-	rgb8** harris_i = rgb8matrix(nrl, nrh, ncl, nch);
+	int** harris_i = imatrix(nrl, nrh, ncl, nch);
 
 	float maskd1[3][3] = {{-1, 0, 1},
       					 { -2, 0, 2},
@@ -131,15 +127,26 @@ rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 	int** sum_ixiy_2 = sum(ixx, iyy, nrl, nrh, ncl, nch);
 	apply(sum_ixiy_2, nrl, nrh, ncl, nch, pow2);
 
+	int local_x = 0;
+	int local_y = 0;
+	float local_max = -10000;
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
-			harris_i[x][y].r = I[x][y]; harris_i[x][y].g = I[x][y]; harris_i[x][y].b = I[x][y];
 			
 			float res = ixy_2[x][y] - ixy[x][y] - LAMBDA * sum_ixiy_2[x][y];
-			if(res > 1000) {
-				harris_i[x][y].r = 255;
-				harris_i[x][y].g = 0; 
-				harris_i[x][y].b = 0;
+			harris_i[x][y] = 0;
+			
+			if(res < 0) {
+				if(local_max > 0) {
+					harris_i[local_x][local_y] = 1;
+					local_max = -10000;
+				}
+			} else {
+				if(res > local_max && res > 3500) {
+					local_max = res;
+					local_x = x;
+					local_y = y;
+				}
 			}
 		}
 	}
@@ -157,4 +164,23 @@ rgb8** harris(byte** I, long nrl, long nrh, long ncl, long nch)
 	free_imatrix(mask3, 0, 3, 0, 3);
 
 	return harris_i;
+}
+
+rgb8** display_corner(byte** I, int** C, long nrl, long nrh, long ncl, long nch)
+{
+	rgb8** disp_c = rgb8matrix(nrl, nrh, ncl, nch);
+
+	for (int x = nrl; x < nrh; x++) {
+		for (int y = ncl; y < nch; y++) {
+			
+			disp_c[x][y].r = I[x][y]; disp_c[x][y].g = I[x][y]; disp_c[x][y].b = I[x][y];			
+			if(C[x][y] == 1) {
+				disp_c[x][y].r = 255;
+				disp_c[x][y].g = 0; 
+				disp_c[x][y].b = 0;				
+			}
+		}
+	}		
+
+	return disp_c;
 }

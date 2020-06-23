@@ -1,6 +1,11 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include<stdio.h>
+#include<stdlib.h>
+#include <math.h>
+#include <dirent.h>
+
 int pow2(int x);
 
 int sqrt2(int x);
@@ -44,5 +49,7 @@ int*** i3D(int M, int N, int O);
 void free_i3D(int*** A, int M, int N);
 
 int fileCount(const char* dir);
+
+void print_progress(size_t count, size_t max);
 
 #endif
