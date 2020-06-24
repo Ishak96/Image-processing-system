@@ -201,6 +201,29 @@ void rollingAverage(int* H, int h_nrl, int h_nrh, int N)
 		}
 }
 
+int gaussian_filter_pixel(int** f, long nrl, long nrh, long ncl, long nch,
+               		  float** mask, long maskw, long maskh, int x, int y)
+{
+	int out = 0;
+	double acc = 0.0;
+	float n = 0.0;
+	
+	for (int u = 0; u < maskw; u++) {
+		for (int v = 0; v < maskh; v++) {
+			int nx = x + u - ((int) (maskw / 2));
+			int ny = y + v - ((int) (maskh / 2));
+
+			if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
+				acc += f[nx][ny] * mask[u][v];
+				n += mask[u][v];
+			}
+		}
+	}
+
+	out = (acc / 16);
+	return out;
+}
+
 int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
                		  float** mask, long maskw, long maskh)
 {
@@ -208,21 +231,8 @@ int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
 
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
-			double acc = 0.0;
-			float n = 0.0;
-
-			for (int u = 0; u < maskw; u++) {
-				for (int v = 0; v < maskh; v++) {
-					int nx = x + u - ((int) (maskw / 2));
-					int ny = y + v - ((int) (maskh / 2));
-
-					if(nx >= nrl && nx < nrh && ny >= ncl && ny < nch) {
-						acc += f[nx][ny] * mask[u][v];
-						n += mask[u][v];
-					}
-				}
-			}
-			out[x][y] = (acc / 16);
+			out[x][y] = gaussian_filter_pixel(f, nrl, nrh, ncl, nch,
+               		  						  mask, maskw, maskh, x, y);
 		}
 	}
 

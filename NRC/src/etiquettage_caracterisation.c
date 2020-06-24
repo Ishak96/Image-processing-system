@@ -81,7 +81,7 @@ Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 					p.OY += y;
 					
 					int byte = ((int)IRGB[y][x].r + (int)IRGB[y][x].g + (int)IRGB[y][x].b) / 3;
-					p.average_greyscal += byte; 
+					p.average_greyscal += byte;
 
 					p.avrage_R += (int)IRGB[y][x].r;
 					p.avrage_G += (int)IRGB[y][x].g; 

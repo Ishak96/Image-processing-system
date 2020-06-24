@@ -101,23 +101,25 @@ void harris(int** harris_i, byte** I, long nrl, long nrh, long ncl, long nch)
 	int** ix = conv2(I, nrl, nrh, ncl, nch, mask1, 3, 3); // horizontal
 	int** iy = conv2(I, nrl, nrh, ncl, nch, mask2, 3, 3); // vertical
 	
-	int** ixy = multiply(ix, iy, nrl, nrh, ncl, nch);
-	ixy = gaussian_filter(ixy, nrl, nrh, ncl, nch, mask3, 3, 3);
+	int** ixy = multiply(ix, iy, nrl, nrh, ncl, nch);	
 	
 	apply(ix, nrl, nrh, ncl, nch, pow2);
 	apply(iy, nrl, nrh, ncl, nch, pow2);
-	apply(ixy, nrl, nrh, ncl, nch, pow2);
-
-	int** ixx = gaussian_filter(ix, nrl, nrh, ncl, nch, mask3, 3, 3);
-	int** iyy = gaussian_filter(iy, nrl, nrh, ncl, nch, mask3, 3, 3);
 
 	int local_x = 0;
 	int local_y = 0;
 	float local_max = -10000;
+
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
 			
-			float res = (ixx[x][y] * iyy[x][y]) - ixy[x][y] - LAMBDA * (ixx[x][y] + iyy[x][y]) * (ixx[x][y] + iyy[x][y]);
+			int ixx = gaussian_filter_pixel(ix, nrl, nrh, ncl, nch, mask3, 3, 3, x, y);;
+			int iyy = gaussian_filter_pixel(iy, nrl, nrh, ncl, nch, mask3, 3, 3, x, y);;
+			int ixy_g = gaussian_filter_pixel(ixy, nrl, nrh, ncl, nch, mask3, 3, 3, x, y);
+
+			ixy_g = ixy_g * ixy_g;
+
+			float res = (ixx * iyy) - ixy_g - LAMBDA * (ixx + iyy) * (ixx + iyy);
 			harris_i[x][y] = 0;
 			
 			if(res < 0) {
@@ -135,8 +137,8 @@ void harris(int** harris_i, byte** I, long nrl, long nrh, long ncl, long nch)
 		}
 	}
 
-	free_imatrix(ixx, nrl, nrh, ncl, nch);
-	free_imatrix(iyy, nrl, nrh, ncl, nch);
+	free_imatrix(ix, nrl, nrh, ncl, nch);
+	free_imatrix(iy, nrl, nrh, ncl, nch);
 	free_imatrix(ixy, nrl, nrh, ncl, nch);
 }
 

@@ -41,6 +41,9 @@ int* histogram(byte** I, long nrl, long nrh, long ncl, long nch, long h_nrl, lon
 
 void rollingAverage(int* H, int h_nrl, int h_nrh, int N);
 
+int gaussian_filter_pixel(int** f, long nrl, long nrh, long ncl, long nch,
+               		  float** mask, long maskw, long maskh, int x, int y);
+
 int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
                		  float** mask, long maskw, long maskh);
 
