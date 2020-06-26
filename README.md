@@ -4,7 +4,15 @@ Réalisation d'un système complet de suivi d'objet dans une séquence d'images 
 
 ## Pour commencer
 
-### Dans le dossier videos/
+Récupérer le répértoire avec :
+
+```bash
+$ git clone https://github.com/Ishak96/image-processing-system.git
+```
+
+Ou bien directement du site.
+
+### Dans le dossier videos
 
 Vous allez trouver des séquences vidéo enregistrées illustrant les différents résultats obtenus sur les deux séquences d'images, ainsi qu'un exemple complet d'utilisation de l'application.
 
