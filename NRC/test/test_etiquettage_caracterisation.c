@@ -62,7 +62,7 @@ int main(void) {
 	const char file_name[n];
 	const char file_name_result[m];
 
-	int n_seq = fileCount(dir);
+	int n_seq = fileCount(dir, label);
 	
 	int step = 1;
 	int displayNext = step;

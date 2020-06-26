@@ -10,9 +10,12 @@
 #include "erosion_dilatation.h"
 #include "utils.h"
 
-extern int CEIL = 50;
+extern int CEIL = 20;
 
 int** mask = NULL;
+
+int maskH = 2;
+int maskW = 2;
 
 void fill_maskR() {
 	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
@@ -21,9 +24,9 @@ void fill_maskR() {
 }
 
 void fill_maskD() {
-	mask[0][0] = 0; mask[0][1] = 1; mask[0][2] = 0;
-	mask[1][0] = 0; mask[1][1] = 1; mask[1][2] = 0;
-	mask[2][0] = 0; mask[2][1] = 1; mask[2][2] = 0;
+	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
+	mask[1][0] = 1; mask[1][1] = 1; mask[1][2] = 1;
+	mask[2][0] = 1; mask[2][1] = 1; mask[2][2] = 1;
 }
 
 void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
@@ -32,19 +35,16 @@ void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 	
 	byte** out = bmatrix(nrl, nrh, ncl, nch);
 	
-	//remplissage
-	fill_maskR();
-
-	n_dilatation(f, out, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-	n_erosion(out, f, nrl, nrh, ncl, nch, mask, 3, 3, n);	
-	
 	//debruitage
-	n = 2;
 	fill_maskD();
-	n_erosion(f, out, nrl, nrh, ncl, nch, mask, 3, 3, n);
+	n_erosion(f, out, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
 
-	n_dilatation(out, f, nrl, nrh, ncl, nch, mask, 3, 3, n);
+	n_dilatation(out, f, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
+
+	//remplissage
+	n_dilatation(f, out, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
+
+	n_erosion(out, f, nrl, nrh, ncl, nch, mask, maskW, maskH, n);	
 
 	free_bmatrix(out, nrl, nrh, ncl, nch);
 }
@@ -53,7 +53,8 @@ int main(void) {
 	long nrh, nrl, nch, ncl;
 
 	const char* dir = "../Images/Sequences/Lbox/ppm/";
-	const char* result_dir = "../Images/results/morphoMath/movementDetectiontMorphoMath/Lbox/";
+	const char* result_dir = "../Images/results/morphoMath/movementDetectiont/Lbox/";
+	const char* label = "lbox";
 
 	int n = strlen(dir) + 11;
 	int m = strlen(result_dir) + 11;
@@ -67,9 +68,9 @@ int main(void) {
 
 	byte** byteI1 = NULL;
 	byte** byteI2 = NULL;
-	mask = imatrix(0, 3, 0, 3);
+	mask = imatrix(0, maskW, 0, maskH);
 
-	int n_seq = fileCount(dir);
+	int n_seq = fileCount(dir, label);
 	for(int i = 1; i < n_seq-1 ; i++) {
 		sprintf(file_name, "%slbox%03d.ppm", dir, i);
 		rgb8** I1 = LoadPPM_rgb8matrix(file_name, &nrl, &nrh, &ncl, &nch);
@@ -90,7 +91,7 @@ int main(void) {
 		//traitement
 		minus(byteI2, byteI1, nrl, nrh, ncl, nch);
 
-		//cleanImage(byteI1, nrl, nrh, ncl, nch);
+		cleanImage(byteI1, nrl, nrh, ncl, nch);
 
 		sprintf(file_name_result, "%slbox%03d.pgm", result_dir, i);
 		SavePGM_bmatrix(byteI1, nrl, nrh, ncl, nch, file_name_result);
@@ -108,7 +109,7 @@ int main(void) {
 
 	free_bmatrix(byteI1, nrl, nrh, ncl, nch);
 	free_bmatrix(byteI2, nrl, nrh, ncl, nch);
-	free_imatrix(mask, 0, 3, 0, 3);
+	free_imatrix(mask, 0, maskW, 0, maskH);;
 
 	return 0;
 }

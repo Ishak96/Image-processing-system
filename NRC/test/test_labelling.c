@@ -32,7 +32,8 @@ int main(void) {
 
    int label = 7;
 
-   rgb8** EX = EXTRACTZONE(I, E, label, nrl, nrh, ncl, nch);
+   rgb8** EX = rgb8matrix(nrl, nrh, ncl, nch);
+   EXTRACTZONE(EX, I, E, label, nrl, nrh, ncl, nch);
    SavePPM_rgb8matrix(EX, nrl, nrh, ncl, nch, "../Images/results/rice_zone7.pgm");
 
    /* Free the byte sum matrix */

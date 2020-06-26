@@ -11,53 +11,45 @@
 #include "erosion_dilatation.h"
 #include "extraction.h"
 
-extern int CEIL = 50;
+extern int CEIL = 40;
 
-byte** cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
-{
-	//debruitage
-	float maskD[3][3] = {{0, 1, 0},
-						 {1, 0, 1},
-						 {0, 1, 0}
-						};
-	int** mask = imatrix(0, 3, 0, 3);
-	
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask[i][j] = maskD[i][j];
-		}
-	}
+int maskH = 3;
+int maskW = 3;
 
-	byte** out11 = bmatrix(nrl, nrh, ncl, nch);
-	byte** out12 = bmatrix(nrl, nrh, ncl, nch);
+int** mask = NULL;
 
+void fill_maskR() {
+	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
+	mask[1][0] = 1; mask[1][1] = 1; mask[1][2] = 1;
+	mask[2][0] = 1; mask[2][1] = 1; mask[2][2] = 1;
+}
+
+void fill_maskD() {
+	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
+	mask[1][0] = 1; mask[1][1] = 1; mask[1][2] = 1;
+	mask[2][0] = 1; mask[2][1] = 1; mask[2][2] = 1;
+}
+
+void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
+{	
 	int n = 1;
-	n_erosion(f, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
+	
+	byte** out = bmatrix(nrl, nrh, ncl, nch);
+	
+	//debruitage
+	fill_maskD();
+	n_erosion(f, out, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
 
-	n_dilatation(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
+	n_dilatation(out, f, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
 
 	//remplissage
-	float maskE[3][3] = {{0, 1, 0},
-						 {1, 1, 1},
-						 {0, 1, 0}
-						};
+	fill_maskR();
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			mask[i][j] = maskE[i][j];
-		}
-	}
+	n_dilatation(f, out, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
 
-	n = 1;
-	n_dilatation(out12, out11, nrl, nrh, ncl, nch, mask, 3, 3, n);
+	n_erosion(out, f, nrl, nrh, ncl, nch, mask, maskW, maskH, n);
 
-	n_erosion(out11, out12, nrl, nrh, ncl, nch, mask, 3, 3, n);
-
-	free_imatrix(mask, 0, 3, 0, 3);
-	free_bmatrix(out11, nrl, nrh, ncl, nch);
-
-	return out12;
+	free_bmatrix(out, nrl, nrh, ncl, nch);
 }
 
 int main(void) {
@@ -71,15 +63,21 @@ int main(void) {
 	int n = strlen(dir) + strlen(label) + 3 + strlen(extention);
 	int m = strlen(result_dir) + strlen(label) + 3 + strlen(extention);
 
+	int step = 1;
+	int displayNext = step;
+	int percent = 0;	
+
 	const char file_name[n];
 	const char file_name_result[m];
 
-	int n_seq = fileCount(dir);
+	int n_seq = fileCount(dir, label);
 
 	byte** I = medianFilter(dir, label, extention, &nrl, &nrh, &ncl, &nch, n_seq);
 	SavePGM_bmatrix(I, nrl, nrh, ncl, nch, "../Images/results/morphoMath/extraxtion/lbox_medianFilter.pgm");
 
 	byte** byteI1 = bmatrix(nrl, nrh, ncl, nch);
+
+	mask = imatrix(0, maskH, 0, maskW);
 
 	for(int i = 1; i <= n_seq; i++) {
 		sprintf(file_name, "%s%s%03d.%s", dir, label, i, extention);
@@ -88,20 +86,24 @@ int main(void) {
 
 		//traitement
 		minus(I, byteI1, nrl, nrh, ncl, nch);
-		printf("%d\n", i);
-		byte** byteR = cleanImage(byteI1, nrl, nrh, ncl, nch);
+		cleanImage(byteI1, nrl, nrh, ncl, nch);
 
 		sprintf(file_name_result, "%s%s%03d.%s", result_dir, label, i, extention);
-		SavePGM_bmatrix(byteR, nrl, nrh, ncl, nch, file_name_result);
+		SavePGM_bmatrix(byteI1, nrl, nrh, ncl, nch, file_name_result);
 		
+		percent = (100 * (i + 1)) / n_seq;
+		if(percent >= displayNext) {
+			print_progress(percent, 100);
+			displayNext += step;			
+		}		
+
 		//Free matrix
 		free_rgb8matrix(I1, nrl, nrh, ncl, nch);
-		
-		free_bmatrix(byteR, nrl, nrh, ncl, nch);
 	}
 
 	free_bmatrix(byteI1, nrl, nrh, ncl, nch);
 	free_bmatrix(I, nrl, nrh, ncl, nch);
+	free_imatrix(mask, 0, maskH, 0, maskW);
 
 	return 0;
 }

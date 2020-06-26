@@ -169,10 +169,8 @@ rgb8** CONVERT(int** E, long nrl, long nrh, long ncl, long nch)
    return I;
 }
 
-rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch)
+void EXTRACTZONE(rgb8** R, byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch)
 {
-   rgb8** R = rgb8matrix(nrl, nrh, ncl, nch);
-
    int dx = 0, dy = 0, N = 0;
    int min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
 
@@ -211,8 +209,40 @@ rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, l
          }
       }
    }
+}
 
-   return R;
+void EXTRACTZONE_RGB8(rgb8** R, int** E, int label, long nrl, long nrh, long ncl, long nch)
+{
+   int dx = 0, dy = 0, N = 0;
+   int min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
+
+   for (int y = nrl; y < nrh; y++) {
+      for (int x = ncl; x < nch; x++) {
+         if (E[y][x] == label) {
+            dx += x;
+            dy += y;
+            N++;
+            
+            if(x > max_x) max_x = x;
+            if(x < min_x) min_x = x;
+            
+            if(y > max_y) max_y = y;
+            if(y < min_y) min_y = y;
+         }
+      }
+   }
+
+   dx /= N; dy /= N;
+
+   R[dy][dx].r = 255; R[dy][dx].g = 0; R[dy][dx].b = 0;
+
+   for (int y = min_y; y < max_y; y++) {
+      for (int x = min_x; x < max_x; x++) {
+         if(x >= max_x - 1 || y >= max_y - 1 || x <= min_x  || y <= min_y) {
+            R[y][x].r = 255; R[y][x].g = 0; R[y][x].b = 0;
+         }
+      }
+   }
 }
 
 /*algorithm with look-up table*/

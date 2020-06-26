@@ -27,6 +27,8 @@ void bapply(byte** m, long nrl, long nrh, long ncl, long nch, int (*func)(int));
 
 int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch);
 
+void rgb8_minus(rgb8** I, byte** Iref, byte** I2, long nrl, long nrh, long ncl, long nch);
+
 void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch);
 
 int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch);
@@ -51,7 +53,7 @@ int*** i3D(int M, int N, int O);
 
 void free_i3D(int*** A, int M, int N);
 
-int fileCount(const char* dir);
+int fileCount(const char* dir, char* label);
 
 void print_progress(size_t count, size_t max);
 

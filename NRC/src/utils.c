@@ -99,6 +99,17 @@ int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
 	return result;
 }
 
+void rgb8_minus(rgb8** I, byte** Iref, byte** I2, long nrl, long nrh, long ncl, long nch)
+{
+	for (int x = nrl; x < nrh; x++) {
+		for (int y = ncl; y < nch; y++) {
+			int value = ((int)I[x][y].r + (int)I[x][y].g + (int)I[x][y].b) / 3;
+			int res = (int)Iref[x][y] - value;
+			I2[x][y] = (res >= CEIL) ? (byte) 255 : (byte) 0;
+		}
+	}	
+}
+
 void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
 {
 	for (int x = nrl; x < nrh; x++) {
@@ -282,17 +293,21 @@ void free_i3D(int*** A, int M, int N)
 	free(A);
 }
 
-int fileCount(const char* dir) 
+int fileCount(const char* dir, char* label) 
 {
 	int file_count = 0;
 	DIR * dirp;
 	struct dirent * entry;
+	char str[12] = "dddd%03d.ppm";
+
+	for(int i = 0; i < 4; i++)
+		str[i] = label[i];
 
 	dirp = opendir(dir); /* There should be error handling after this */	
 	int index = 0;
 	if(dirp != NULL) {
 		while ((entry = readdir(dirp)) != NULL) {
-			if(entry->d_type == DT_REG && sscanf(entry->d_name, "lbox%03d.ppm", &index) == 1) {
+			if(entry->d_type == DT_REG && sscanf(entry->d_name, str, &index) == 1) {
 				file_count++;
 			}
 		}

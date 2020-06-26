@@ -35,7 +35,9 @@ int** INTUITIVE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long 
 
 rgb8** CONVERT(int** E, long nrl, long nrh, long ncl, long nch);
 
-rgb8** EXTRACTZONE(byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch);
+void EXTRACTZONE(rgb8** R, byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch);
+
+void EXTRACTZONE_RGB8(rgb8** R, int** E, int label, long nrl, long nrh, long ncl, long nch);
 
 /*algorithm with look-up table*/
 void LOOKUP_TABLE_LABELLING(byte** I, int** E, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch);

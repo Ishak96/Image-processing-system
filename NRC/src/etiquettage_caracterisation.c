@@ -67,6 +67,7 @@ Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 	Parameters* param = (Parameters *) malloc(num_label * sizeof(Parameters));
 
 	for(int label = 1; label <= num_label; label++) {
+		int min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
 		Parameters p = init_parameters();
 		p.area_label = label;
 
@@ -79,6 +80,12 @@ Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 					p.size += 1;
 					p.OX += x;
 					p.OY += y;
+
+            		if(x > max_x) max_x = x;
+            		if(x < min_x) min_x = x;
+            
+            		if(y > max_y) max_y = y;
+            		if(y < min_y) min_y = y;					
 					
 					int byte = ((int)IRGB[y][x].r + (int)IRGB[y][x].g + (int)IRGB[y][x].b) / 3;
 					p.average_greyscal += byte;
@@ -92,6 +99,10 @@ Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 				}
 			}
 		}
+		
+		p.min_x = min_x; p.max_x = max_x;
+		p.min_y = min_y; p.max_y = max_y;
+
 		p.OX = p.OX / p.size;
 		p.OY = p.OY / p.size;
 		p.average_greyscal = p.average_greyscal / p.size;

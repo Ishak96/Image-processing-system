@@ -10,6 +10,7 @@ typedef struct
 	float theta;
 	float average_greyscal;
 	float avrage_R, avrage_G, avrage_B;
+	int min_x, max_x, min_y, max_y;
 	int* H;
 } Parameters;
 
