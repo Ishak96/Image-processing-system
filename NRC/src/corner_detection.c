@@ -5,11 +5,15 @@
 #include "corner_detection.h"
 #include "utils.h"
 
+/* ---------------------------------------- */
 float** mask1 = NULL;
 float** mask2 = NULL;
 float** mask3 = NULL;
+/* ---------------------------------------- */
 
+/* ---------------------------------------- */
 void create_mask(int harris_gradient) 
+/* ---------------------------------------- */
 {
 	if(mask1 == NULL) {
 		mask1 = imatrix(0, 3, 0, 3);
@@ -41,7 +45,9 @@ void create_mask(int harris_gradient)
 	}	
 }
 
+/* ---------------------------------------- */
 void destroy_mask()
+/* ---------------------------------------- */
 {
 	if(mask1 != NULL && mask2 != NULL && mask3 != NULL) {
 		free_imatrix(mask1, 0, 3, 0, 3);
@@ -50,7 +56,9 @@ void destroy_mask()
 	}
 }
 
+/* ---------------------------------------- */
 int** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	create_mask(0);
 
@@ -93,7 +101,9 @@ int** gradient(byte** I, long nrl, long nrh, long ncl, long nch)
 	return grad_i;
 }
 
+/* ---------------------------------------- */
 void harris(int** harris_i, byte** I, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	create_mask(1);
 	
@@ -142,7 +152,9 @@ void harris(int** harris_i, byte** I, long nrl, long nrh, long ncl, long nch)
 	free_imatrix(ixy, nrl, nrh, ncl, nch);
 }
 
+/* ---------------------------------------- */
 rgb8** display_corner(byte** I, int** C, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	rgb8** disp_c = rgb8matrix(nrl, nrh, ncl, nch);
 

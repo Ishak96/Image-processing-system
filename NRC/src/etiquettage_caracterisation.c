@@ -13,7 +13,9 @@
 #include "extraction.h"
 #include "labelling.h"
 
+/* ---------------------------------------- */
 Parameters init_parameters()
+/* ---------------------------------------- */
 {
 	Parameters param = {
 		.area_label = -1,
@@ -31,12 +33,16 @@ Parameters init_parameters()
 	return param;
 }
 
+/* ---------------------------------------- */
 void free_parameters(Parameters *param)
+/* ---------------------------------------- */
 {
 	free_ivector(param->H, 0, 255);
 }
 
+/* ---------------------------------------- */
 void dump_parameters(Parameters* param, int size)
+/* ---------------------------------------- */
 {
 	printf("########IMAGE#########\n");
 	for(int label = 0; label < size; label++) {
@@ -61,8 +67,10 @@ void dump_parameters(Parameters* param, int size)
 	printf("########IMAGE#########\n");
 }
 
+/* ---------------------------------------- */
 Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 							  long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	Parameters* param = (Parameters *) malloc(num_label * sizeof(Parameters));
 
@@ -125,7 +133,9 @@ Parameters* compute_parameters(rgb8** IRGB, int** E, int num_label,
 	return param;
 }
 
+/* ---------------------------------------- */
 void store_parameters(int i, int num_label, Parameters* param)
+/* ---------------------------------------- */
 {
 	const char* dir = "../Images/results/caracterisation/Lbox/";
 	const char* label = "lbox";

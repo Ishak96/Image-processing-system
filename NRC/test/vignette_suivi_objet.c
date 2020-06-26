@@ -2,7 +2,6 @@
 #include<stdlib.h>
 #include <math.h>
 #include <dirent.h>
-#include <gtk/gtk.h>
 
 #include "def.h"
 #include "nrio.h"

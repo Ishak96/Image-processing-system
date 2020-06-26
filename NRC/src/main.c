@@ -35,19 +35,27 @@ const char* result_dir = "../Images/results/object_tracking/Lbox/";
 int maskH = 3;
 int maskW = 3;
 
-void fill_maskR() {
+/* ---------------------------------------- */
+void fill_maskR() 
+/* ---------------------------------------- */
+{
 	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
 	mask[1][0] = 1; mask[1][1] = 1; mask[1][2] = 1;
 	mask[2][0] = 1; mask[2][1] = 1; mask[2][2] = 1;
 }
 
-void fill_maskD() {
+/* ---------------------------------------- */
+void fill_maskD() 
+/* ---------------------------------------- */
+{
 	mask[0][0] = 1; mask[0][1] = 1; mask[0][2] = 1;
 	mask[1][0] = 1; mask[1][1] = 1; mask[1][2] = 1;
 	mask[2][0] = 1; mask[2][1] = 1; mask[2][2] = 1;
 }
 
+/* ---------------------------------------- */
 void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {	
 	int n = 1;
 	
@@ -69,7 +77,9 @@ void cleanImage(byte** f, long nrl, long nrh, long ncl, long nch)
 	free_bmatrix(out, nrl, nrh, ncl, nch);
 }
 
+/* ---------------------------------------- */
 void best_parameter(Parameters* param, int size, Parameters* prev_param)
+/* ---------------------------------------- */
 {
 	int h_err = 10000;
 	int dist_min = 10000;
@@ -97,9 +107,11 @@ void best_parameter(Parameters* param, int size, Parameters* prev_param)
 		*prev_param = param[winer];
 }
 
+/* ---------------------------------------- */
 void track_object(byte** I, int** E, byte** byteI1, 
 				  int track_label, int initial_pic, 
 				  long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int n = strlen(dir) + strlen(label) + 3 + strlen(extention);
 	int m = strlen(result_dir) + strlen(label) + 3 + strlen(extention);
@@ -187,7 +199,9 @@ void track_object(byte** I, int** E, byte** byteI1,
 	destroy_mask();
 }
 
+/* ---------------------------------------- */
 byte** compute_ref_image(int* nrl, int* nrh, int* ncl, int* nch)
+/* ---------------------------------------- */
 {	
 	byte** I;
 
@@ -203,10 +217,14 @@ byte** compute_ref_image(int* nrl, int* nrh, int* ncl, int* nch)
 	return I;
 }
 
-void destroy(void) {
+/* ---------------------------------------- */
+void destroy(void) 
+/* ---------------------------------------- */
+{
   gtk_main_quit();
 }
 
+/* -----------------MAIN----------------------- */
 int main(int argc, char** argv) {
   	GtkWidget* window;
   	GtkWidget* image;
@@ -231,7 +249,7 @@ int main(int argc, char** argv) {
 
 		ref_image_file = "../Images/results/morphoMath/extraxtion/fomd_medianFilter.pgm";
 
-		result_dir = "../Images/results/object_tracking/Fomd/";	
+		result_dir = "../Images/results/object_tracking/Fomd/";
 	}
 
 

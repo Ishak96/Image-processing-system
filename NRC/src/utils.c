@@ -6,41 +6,55 @@
 
 int CEIL;
 
+/* ---------------------------------------- */
 int pow2(int x)
+/* ---------------------------------------- */
 {
 	return x * x;
 }
 
+/* ---------------------------------------- */
 int sqrt2(int x)
+/* ---------------------------------------- */
 {
 	return (int) sqrt((double) x);
 }
 
+/* ---------------------------------------- */
 int I_min(int a, int b)
+/* ---------------------------------------- */
 {
 	return (a > b) ? b : a;
 }
 
+/* ---------------------------------------- */
 int I_max(int a, int b)
+/* ---------------------------------------- */
 {
 	return (a > b) ? a : b;
 }
 
+/* ---------------------------------------- */
 int ceil2(int x)
+/* ---------------------------------------- */
 {
 	return 255 * (x > CEIL) ;
 }
 
+/* ---------------------------------------- */
 int ceil3(int x)
+/* ---------------------------------------- */
 {
    return x * 255;
 }
 
+/* ---------------------------------------- */
 /* 2D convolution with a mask
  * Retuns an imatrix to avoid overflows
  */
 int** conv2(byte** f, long nrl, long nrh, long ncl, long nch,
             float** mask, long maskw, long maskh)
+/* ---------------------------------------- */
 {
 	int** out = imatrix(nrl, nrh, ncl, nch);
 
@@ -67,8 +81,10 @@ int** conv2(byte** f, long nrl, long nrh, long ncl, long nch,
 	return out;
 }
 
+/* ---------------------------------------- */
 /* Apply a function to every element of an imatrix*/
 void apply(int** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
+/* ---------------------------------------- */
 {
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
@@ -77,10 +93,11 @@ void apply(int** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
 	}
 }
 
+/* ---------------------------------------- */
 /* Apply a function to every element of an byte matrix*/
 void bapply(byte** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
+/* ---------------------------------------- */
 {
-
    for (int y = nrl; y < nrh; y++) {
       for (int x = ncl; x < nch; x++) {
          m[y][x] = func(m[y][x]);
@@ -88,7 +105,9 @@ void bapply(byte** m, long nrl, long nrh, long ncl, long nch, int (*func)(int))
    }
 }
 
+/* ---------------------------------------- */
 int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int** result = imatrix(nrl, nrh, ncl, nch);
 	for (int x = nrl; x < nrh; x++) {
@@ -99,7 +118,9 @@ int** sum(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
 	return result;
 }
 
+/* ---------------------------------------- */
 void rgb8_minus(rgb8** I, byte** Iref, byte** I2, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
@@ -110,7 +131,9 @@ void rgb8_minus(rgb8** I, byte** Iref, byte** I2, long nrl, long nrh, long ncl, 
 	}	
 }
 
+/* ---------------------------------------- */
 void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
@@ -120,7 +143,9 @@ void minus(byte** I1, byte** I2,long nrl, long nrh, long ncl, long nch)
 	}	
 }
 
+/* ---------------------------------------- */
 int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int** result = imatrix(nrl, nrh, ncl, nch);
 	for (int x = nrl; x < nrh; x++) {
@@ -132,7 +157,9 @@ int** multiply(int** I1, int** I2, long nrl, long nrh, long ncl, long nch)
 	return result;
 }
 
+/* ---------------------------------------- */
 void rgb8matrix_to_bmatrix(rgb8** I, byte** out, int nrl, int nrh, int ncl, int nch)
+/* ---------------------------------------- */
 {
 	for (int x = nrl; x < nrh; x++) {
 		for (int y = ncl; y < nch; y++) {
@@ -141,12 +168,13 @@ void rgb8matrix_to_bmatrix(rgb8** I, byte** out, int nrl, int nrh, int ncl, int 
 	}
 }
 
+/* ---------------------------------------- */
 /* Convert an imatrix to a bmatrix
  * PS: casting to smaller type can be lossy
  */
 byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
-
    byte** out = bmatrix(nrl, nrh, ncl, nch);
 
    for (int x = nrl; x < nrh; x++) {
@@ -160,7 +188,9 @@ byte** convert_imatrix_bmatrix(int** m, long nrl, long nrh, long ncl, long nch)
    return out;
 }
 
+/* ---------------------------------------- */
 byte** binarization(byte** I, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    byte** out = bmatrix(nrl, nrh, ncl, nch);
    
@@ -175,7 +205,9 @@ byte** binarization(byte** I, long nrl, long nrh, long ncl, long nch)
    return out;
 }
 
+/* ---------------------------------------- */
 int* histogram(byte** I, long nrl, long nrh, long ncl, long nch, long h_nrl, long h_nrh)
+/* ---------------------------------------- */
 {
 	int* H = ivector(h_nrl, h_nrh);
 
@@ -196,7 +228,9 @@ int* histogram(byte** I, long nrl, long nrh, long ncl, long nch, long h_nrl, lon
 	return H;
 }
 
+/* ---------------------------------------- */
 void rollingAverage(int* H, int h_nrl, int h_nrh, int N)
+/* ---------------------------------------- */
 {
 	int som;
 
@@ -212,8 +246,10 @@ void rollingAverage(int* H, int h_nrl, int h_nrh, int N)
 		}
 }
 
+/* ---------------------------------------- */
 int gaussian_filter_pixel(int** f, long nrl, long nrh, long ncl, long nch,
                		  float** mask, long maskw, long maskh, int x, int y)
+/* ---------------------------------------- */
 {
 	int out = 0;
 	double acc = 0.0;
@@ -235,8 +271,10 @@ int gaussian_filter_pixel(int** f, long nrl, long nrh, long ncl, long nch,
 	return out;
 }
 
+/* ---------------------------------------- */
 int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
                		  float** mask, long maskw, long maskh)
+/* ---------------------------------------- */
 {
 	int** out = imatrix(nrl, nrh, ncl, nch);
 
@@ -251,8 +289,10 @@ int** gaussian_filter(int** f, long nrl, long nrh, long ncl, long nch,
 	return out;
 }
 
+/* ---------------------------------------- */
 // M -> x-axis, N -> y-axis, O -> z-axis
 int*** i3D(int M, int N, int O)
+/* ---------------------------------------- */
 {
 	int*** A = (int***) malloc(M * sizeof(int**));
 
@@ -282,7 +322,9 @@ int*** i3D(int M, int N, int O)
 	return A;
 }
 
+/* ---------------------------------------- */
 void free_i3D(int*** A, int M, int N)
+/* ---------------------------------------- */
 {
 	for (int i = 0; i < M; i++) {
 		for (int j = 0; j < N; j++)
@@ -293,7 +335,9 @@ void free_i3D(int*** A, int M, int N)
 	free(A);
 }
 
+/* ---------------------------------------- */
 int fileCount(const char* dir, char* label) 
+/* ---------------------------------------- */
 {
 	int file_count = 0;
 	DIR * dirp;
@@ -317,7 +361,9 @@ int fileCount(const char* dir, char* label)
 	return file_count;	
 }
 
+/* ---------------------------------------- */
 void print_progress(size_t count, size_t max)
+/* ---------------------------------------- */
 {
 	const char prefix[] = "Progress: [";
 	char suffix[9];

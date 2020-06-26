@@ -10,8 +10,10 @@
 #include "utils.h"
 #include "extraction.h"
 
+/* ---------------------------------------- */
 void erosion(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh)
+/* ---------------------------------------- */
 {
 	int same = 0;
 	for (int i = 0; i < maskw; i++) {
@@ -41,8 +43,10 @@ void erosion(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
    }
 }
 
+/* ---------------------------------------- */
 void dilatation(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh)
+/* ---------------------------------------- */
 {
    for (int x = nrl; x < nrh; x++) {
       for (int y = ncl; y < nch; y++) {
@@ -64,8 +68,10 @@ void dilatation(byte** f, byte** out, long nrl, long nrh, long ncl, long nch,
    }
 }
 
+/* ---------------------------------------- */
 void n_erosion(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh, int n)
+/* ---------------------------------------- */
 {
    erosion(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
  
@@ -75,8 +81,10 @@ void n_erosion(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
    }
 }
 
+/* ---------------------------------------- */
 void n_dilatation(byte** src, byte** dist, long nrl, long nrh, long ncl, long nch,
             int** mask, long maskw, long maskh, int n)
+/* ---------------------------------------- */
 {
    dilatation(src, dist, nrl, nrh, ncl, nch, mask, maskw, maskh);
  

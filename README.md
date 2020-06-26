@@ -60,7 +60,18 @@ Pour lancer l'application :
 $ bin/object_tracking "LABEL"
 ```
 
+Le résultat sera stocké dans le dossier /Images/results/object_tracking/
+
 Précisez Le "LABEL" -> Lbox ou Fomd
+
+Pour lancer que le suivi par sélection de vignette autour des points d'intérêt :
+
+Pour lancer l'application :
+```bash
+$ bin/vignette_suivi_objet
+```
+
+Le résultat sera stocké dans le dossier /Images/results/morphoMath/extraxtion/movementDetectiontRefImage/Lbox/
 
 ## Fabriqué avec
 

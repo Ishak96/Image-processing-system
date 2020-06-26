@@ -9,8 +9,10 @@
 #include "labelling.h"
 #include "utils.h"
 
+/* ---------------------------------------- */
 /*functions for ArrayList*/
 ArrayList NEW_ArrayList()
+/* ---------------------------------------- */
 {
    ArrayList array;
 
@@ -22,7 +24,9 @@ ArrayList NEW_ArrayList()
    return array;
 }
 
+/* ---------------------------------------- */
 void ADD_ArrayList(ArrayList* arr, TElement elem)
+/* ---------------------------------------- */
 {
    if (arr->current_size < arr->size) {
       arr->list[arr->current_size] = elem;
@@ -36,7 +40,9 @@ void ADD_ArrayList(ArrayList* arr, TElement elem)
    }
 }
 
+/* ---------------------------------------- */
 void FREE_ArrayList(ArrayList* arr)
+/* ---------------------------------------- */
 {
    arr->size = 0;
    arr->current_size = 0;
@@ -44,8 +50,11 @@ void FREE_ArrayList(ArrayList* arr)
    free(arr->list);
 }
 
+/* ---------------------------------------- */
 /*mask functions to get label and attribut of A and B*/
-int E_B(int** E, long nrl, long nrh, long ncl, long nch, int y, int x){
+int E_B(int** E, long nrl, long nrh, long ncl, long nch, int y, int x)
+/* ---------------------------------------- */
+{
    int label = -1;
 
    if (y-1 > nrl) {
@@ -55,7 +64,10 @@ int E_B(int** E, long nrl, long nrh, long ncl, long nch, int y, int x){
    return label;
 }
 
-int E_A(int** E, long nrl, long nrh, long ncl, long nch, int y, int x){
+/* ---------------------------------------- */
+int E_A(int** E, long nrl, long nrh, long ncl, long nch, int y, int x)
+/* ---------------------------------------- */
+{
    int label = -1;
 
    if (x-1 > ncl) {
@@ -65,7 +77,10 @@ int E_A(int** E, long nrl, long nrh, long ncl, long nch, int y, int x){
    return label;
 }
 
-int ATT_B(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x){
+/* ---------------------------------------- */
+int ATT_B(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x)
+/* ---------------------------------------- */
+{
    int att = -1;
 
    if (y-1 > nrl) {
@@ -75,7 +90,10 @@ int ATT_B(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x){
    return att;
 }
 
-int ATT_A(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x){
+/* ---------------------------------------- */
+int ATT_A(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x)
+/* ---------------------------------------- */
+{
    int att = -1;
 
    if (x-1 > ncl) {
@@ -85,8 +103,10 @@ int ATT_A(byte** I, long nrl, long nrh, long ncl, long nch, int y, int x){
    return att;
 }
 
+/* ---------------------------------------- */
 /*intuitive algorithm of labelling*/
 void CHANGE(int** E, long nrl, long nrh, long ncl, long nch, int e_a, int e_b)
+/* ---------------------------------------- */
 {
    for (int y = nrl; y < nrh; y++) {
       for (int x = ncl; x < nch; x++) {
@@ -97,7 +117,9 @@ void CHANGE(int** E, long nrl, long nrh, long ncl, long nch, int e_a, int e_b)
    }
 }
 
+/* ---------------------------------------- */
 int** INTUITIVE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    int att_a, att_b, e_a, e_b, att_c;
    /*E : the matrix of labels*/
@@ -142,7 +164,9 @@ int** INTUITIVE_LABELLING(byte** I, int* CURRENTLABEL, long nrl, long nrh, long 
    return E;
 }
 
+/* ---------------------------------------- */
 rgb8** CONVERT(int** E, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    int R, G, B;
    int C;
@@ -169,7 +193,9 @@ rgb8** CONVERT(int** E, long nrl, long nrh, long ncl, long nch)
    return I;
 }
 
+/* ---------------------------------------- */
 void EXTRACTZONE(rgb8** R, byte** I, int** E, int label, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    int dx = 0, dy = 0, N = 0;
    int min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
@@ -211,7 +237,9 @@ void EXTRACTZONE(rgb8** R, byte** I, int** E, int label, long nrl, long nrh, lon
    }
 }
 
+/* ---------------------------------------- */
 void EXTRACTZONE_RGB8(rgb8** R, int** E, int label, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    int dx = 0, dy = 0, N = 0;
    int min_x = INFINITY, min_y = INFINITY, max_x = -INFINITY, max_y = -INFINITY;
@@ -245,8 +273,10 @@ void EXTRACTZONE_RGB8(rgb8** R, int** E, int label, long nrl, long nrh, long ncl
    }
 }
 
+/* ---------------------------------------- */
 /*algorithm with look-up table*/
 void LOOKUP_TABLE_LABELLING(byte** I, int** E, int* CURRENTLABEL, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
    int att_a, att_b, e_a, e_b, att_c;
 

@@ -1,7 +1,9 @@
 #include "track.h"
 
+/* ---------------------------------------- */
 void init_system(Vignette* vignette, rgb8** I, int** harris_i, int** E, 
 				 int track_label, int vignette_size, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	vignette->pose.OY = -INFINITY;
 	int N = 0;
@@ -31,9 +33,12 @@ void init_system(Vignette* vignette, rgb8** I, int** harris_i, int** E,
 	vignette->pose.min_y = vignette->pose.max_y = 0;
 }
 
+/* ---------------------------------------- */
 void compute_param(rgb8** I, int** E, int label, int* H, int* size,
 				   int* min_x, int* max_x, int* min_y, int* max_y,
-				   long nrl, long nrh, long ncl, long nch) {	
+				   long nrl, long nrh, long ncl, long nch) 
+/* ---------------------------------------- */
+{	
 
 	for (int i = 0; i < 255; i++)
 		H[i] = 0;
@@ -60,7 +65,9 @@ void compute_param(rgb8** I, int** E, int label, int* H, int* size,
     }
 }
 
+/* ---------------------------------------- */
 void dump_vignette(Vignette vignette)
+/* ---------------------------------------- */
 {
 	printf("size : %d\n", vignette.size);
 	for(int i = 0; i < 255; i++)
@@ -68,7 +75,9 @@ void dump_vignette(Vignette vignette)
 	printf("\n");
 }
 
+/* ---------------------------------------- */
 int track(int** E, rgb8** I1, Vignette* vignette, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int new_label = 0;
 	int h_err = 10000;
@@ -144,8 +153,10 @@ int track(int** E, rgb8** I1, Vignette* vignette, long nrl, long nrh, long ncl, 
 	return new_label;
 }
 
+/* ---------------------------------------- */
 void extract_zone_p(rgb8** I, byte** byteI1, Parameters param,
 				  int rgb, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int min_x = param.min_x, min_y = param.min_y; 
 	int max_x = param.max_x, max_y = param.max_y;
@@ -167,8 +178,10 @@ void extract_zone_p(rgb8** I, byte** byteI1, Parameters param,
 	}
 }
 
+/* ---------------------------------------- */
 void extract_zone(rgb8** I, byte** byteI1, Vignette vignette,
 				  int rgb, long nrl, long nrh, long ncl, long nch)
+/* ---------------------------------------- */
 {
 	int min_x = vignette.pose.min_x, min_y = vignette.pose.min_y; 
 	int max_x = vignette.pose.max_x, max_y = vignette.pose.max_y;

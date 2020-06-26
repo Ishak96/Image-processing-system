@@ -10,8 +10,10 @@
 #include "utils.h"
 #include "extraction.h"
 
+/* ---------------------------------------- */
 byte** temporalAverage(const char* dir_name, const char* label, const char* extention,
 					   long* nrl, long* nrh, long* ncl, long* nch, int n_seq)
+/* ---------------------------------------- */
 {
 	int n = strlen(dir_name) + strlen(label) + 3 + strlen(extention);
 	
@@ -46,8 +48,10 @@ byte** temporalAverage(const char* dir_name, const char* label, const char* exte
 	return bOut;
 }
 
+/* ---------------------------------------- */
 byte** medianFilter(const char* dir_name, const char* label, const char* extention,
 					   long* nrl, long* nrh, long* ncl, long* nch, int n_seq)
+/* ---------------------------------------- */
 {
 	int n = strlen(dir_name) + strlen(label) + 3 + strlen(extention);
 	const char file_name[n];
