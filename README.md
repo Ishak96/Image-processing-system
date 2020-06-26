@@ -4,7 +4,9 @@ Réalisation d'un système complet de suivi d'objet dans une séquence d'images 
 
 ## Pour commencer
 
-Dans le dossier videos/ vous allez trouver des séquences vidéo enregistrées illustrant les différents résultats obtenus sur les deux séquences d'images, ainsi qu'un exemple complet d'utilisation de l'application.
+### Dans le dossier videos/
+
+Vous allez trouver des séquences vidéo enregistrées illustrant les différents résultats obtenus sur les deux séquences d'images, ainsi qu'un exemple complet d'utilisation de l'application.
 
 Au niveau de l'architecture du code, j'ai découpé en plusieurs dossiers.
 
